@@ -5,8 +5,11 @@ import json
 import datetime
 from pandas.io.json import json_normalize
 import urllib.request
+import os
 
-with open('config.json') as json_data_file:
+filedir = os.path.dirname(__file__)
+
+with open(filedir+'/config.json') as json_data_file:
     data = json.load(json_data_file)
 workingdir = data['datadir']
 
