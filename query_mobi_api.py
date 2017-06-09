@@ -12,7 +12,7 @@ workingdir = data['datadir']
 
 
 daily_df = '{}/daily_mobi_dataframe.p'.format(workingdir)
-print(daily_df)
+#print(daily_df)
 #with open('stations.json') as data_file:
 #    data = json.load(data_file)
 
