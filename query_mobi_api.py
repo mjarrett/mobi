@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import pandas as pd
 import json
 import datetime
@@ -7,14 +5,15 @@ from pandas.io.json import json_normalize
 import urllib.request
 import os
 
-filedir = os.path.dirname(__file__)
+#filedir = os.path.dirname(os.path.realpath(__file__))
+#filedir = os.path.dirname(__file__)
+#print(filedir)
+#with open(filedir+'/config.json') as json_data_file:
+#    data = json.load(json_data_file)
+#workingdir = data['datadir']
+workingdir = '/home/msj/repos/mobi/'
 
-with open(filedir+'/config.json') as json_data_file:
-    data = json.load(json_data_file)
-workingdir = data['datadir']
-
-
-daily_df = '{}/daily_mobi_dataframe.p'.format(workingdir)
+daily_df = '{}daily_mobi_dataframe.p'.format(workingdir)
 #print(daily_df)
 #with open('stations.json') as data_file:
 #    data = json.load(data_file)
