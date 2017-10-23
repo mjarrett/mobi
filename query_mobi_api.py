@@ -4,24 +4,20 @@ import datetime
 from pandas.io.json import json_normalize
 import urllib.request
 import os
+import sys
 
-#filedir = os.path.dirname(os.path.realpath(__file__))
-#filedir = os.path.dirname(__file__)
-#print(filedir)
-#with open(filedir+'/config.json') as json_data_file:
-#    data = json.load(json_data_file)
-#workingdir = data['datadir']
-workingdir = '/home/msj/repos/mobi/'
+#workingdir = '/home/msj/repos/mobi/'
+workingdir = sys.argv[1]
 
 daily_df = '{}daily_mobi_dataframe.p'.format(workingdir)
-#print(daily_df)
-#with open('stations.json') as data_file:
-#    data = json.load(data_file)
 
+
+# Query mobi API
 with urllib.request.urlopen("http://vancouver-ca.smoove.pro/api-public/stations") as url:
     data = json.loads(url.read().decode())
- #   print(data)
 
+
+# Try to load daily df. If it doesn't exist, create it. Append newly queried data to the end of it.
 try:
     df = pd.read_pickle(daily_df)
 except:
