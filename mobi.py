@@ -5,9 +5,6 @@ import json
 
 
 
-
-
-
 def breakdown_ddf(dailydf,workingdir='./'):
 
   """
@@ -23,6 +20,7 @@ def breakdown_ddf(dailydf,workingdir='./'):
   
   # Make pivot table from daily df
   pdf = pd.pivot_table(dailydf,columns='name',index='time',values='avl_bikes')
+  pdf.index = pd.to_datetime(pdf.index)
   ddf = pdf.copy()
 
   for col in pdf.columns:
@@ -37,12 +35,6 @@ def breakdown_ddf(dailydf,workingdir='./'):
   takendf = takendf*-1
 
   activitydf = ddf.abs()
-  
-  # Convert to correct timezone
-  takendf  = takendf.tz_localize('UTC').tz_convert('US/Pacific')
-  returneddf = returneddf.tz_localize('UTC').tz_convert('US/Pacific')
-  activitydf = activitydf.tz_localize('UTC').tz_convert('US/Pacific')
-
 
   return takendf, returneddf, activitydf
 
@@ -59,48 +51,66 @@ def update_dataframes(takendf, returneddf, activitydf,workingdir='./'):
 
   
   try:
-    taken_hourly_df = pd.read_pickle('{}/taken_hourly_df.p'.format(workingdir))
-  except:
-    taken_hourly_df = pd.DataFrame()
-  taken_hourly_df = taken_hourly_df.append(takendf.groupby(pd.TimeGrouper(freq='H')).sum())
-  taken_daily_df = taken_hourly_df.groupby(pd.TimeGrouper(freq='D')).sum()
-  taken_hourly_df.to_pickle('{}/taken_hourly_df.p'.format(workingdir))
-  taken_daily_df.to_pickle('{}/taken_daily_df.p'.format(workingdir))
+    taken_hourly_df = pd.read_csv('{}/taken_hourly_df.csv'.format(workingdir),index_col=0)
+    taken_hourly_df.index = pd.to_datetime(taken_hourly_df.index)
 
+  except:
+    #pass
+    taken_hourly_df = pd.DataFrame()
+
+  taken_hourly_df = taken_hourly_df.drop_duplicates()
+  taken_hourly_df = taken_hourly_df.groupby(taken_hourly_df.index).max()  
+  taken_hourly_df = taken_hourly_df.append(takendf.groupby(pd.Grouper(freq='H')).sum())
+  taken_daily_df = taken_hourly_df.groupby(pd.Grouper(freq='D')).sum()
+  taken_hourly_df.to_csv('{}/taken_hourly_df.csv'.format(workingdir))
+  taken_daily_df.to_csv('{}/taken_daily_df.csv'.format(workingdir))
+  
   try:
-    returned_hourly_df = pd.read_pickle('{}/returned_hourly_df.p'.format(workingdir))
+    returned_hourly_df = pd.read_csv('{}/returned_hourly_df.csv'.format(workingdir),index_col=0)
+    returned_hourly_df.index = pd.to_datetime(returned_hourly_df.index)
   except:
     returned_hourly_df = pd.DataFrame()
-  returned_hourly_df = returned_hourly_df.append(returneddf.groupby(pd.TimeGrouper(freq='H')).sum())
-  returned_daily_df = returned_hourly_df.groupby(pd.TimeGrouper(freq='D')).sum()
-  returned_hourly_df.to_pickle('{}/returned_hourly_df.p'.format(workingdir))
-  returned_daily_df.to_pickle('{}/returned_daily_df.p'.format(workingdir))
 
+  returned_hourly_df = returned_hourly_df.drop_duplicates()
+  returned_hourly_df = returned_hourly_df.groupby(returned_hourly_df.index).max()
+  returned_hourly_df = returned_hourly_df.append(returneddf.groupby(pd.Grouper(freq='H')).sum())
+  returned_daily_df = returned_hourly_df.groupby(pd.Grouper(freq='D')).sum()
+  returned_hourly_df.to_csv('{}/returned_hourly_df.csv'.format(workingdir))
+  returned_daily_df.to_csv('{}/returned_daily_df.csv'.format(workingdir))
 
   try:
-    activity_hourly_df = pd.read_pickle('{}/activity_hourly_df.p'.format(workingdir))
+    activity_hourly_df = pd.read_csv('{}/activity_hourly_df.csv'.format(workingdir),index_col=0)
+    activity_hourly_df.index = pd.to_datetime(activity_hourly_df.index)
   except:
     activity_hourly_df = pd.DataFrame()
-  activity_hourly_df = activity_hourly_df.append(activitydf.groupby(pd.TimeGrouper(freq='H')).sum())
-  activity_daily_df = activity_hourly_df.abs().groupby(pd.TimeGrouper(freq='D')).sum()
-  activity_hourly_df.to_pickle('{}/activity_hourly_df.p'.format(workingdir))
-  activity_daily_df.to_pickle('{}/activity_daily_df.p'.format(workingdir))
+
+  activity_hourly_df = activity_hourly_df.drop_duplicates()
+  activity_hourly_df = activity_hourly_df.groupby(activity_hourly_df.index).max()
+  activity_hourly_df = activity_hourly_df.append(activitydf.groupby(pd.Grouper(freq='H')).sum())
+  activity_daily_df = activity_hourly_df.abs().groupby(pd.Grouper(freq='D')).sum()
+  activity_hourly_df.to_csv('{}/activity_hourly_df.csv'.format(workingdir))
+  activity_daily_df.to_csv('{}/activity_daily_df.csv'.format(workingdir))
 
 
+
+
+  
+
+  
 
 if __name__ == '__main__':
   import sys
-  #print('testing...')
+
   workingdir=os.path.normpath(sys.argv[1])
 
   # Load daily dataframe
-  dailydf = pd.read_pickle('{}/daily_mobi_dataframe.p'.format(workingdir))
+  dailydf = pd.read_csv('{}/daily_mobi_dataframe.csv'.format(workingdir))
 
 
   a,b,c = breakdown_ddf(dailydf)
-  update_dataframes(a,b,c)
+  update_dataframes(a,b,c,workingdir=workingdir)
 
   
   # Rename daily df
   timestr = time.strftime("%Y%m%d-%H%M%S")
-  os.rename('{}/daily_mobi_dataframe.p'.format(workingdir),'{}/daily_mobi_dataframe.p_BAK_{}'.format(workingdir,timestr))
+  os.rename('{}/daily_mobi_dataframe.csv'.format(workingdir),'{}/backups/daily_mobi_dataframe.csv_BAK_{}'.format(workingdir,timestr))
