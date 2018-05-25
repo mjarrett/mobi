@@ -131,15 +131,24 @@ def get_stations(workingdir):
 
     try:
         stations_df = load_csv(workingdir+'/stations_daily_df.csv')
-        stations_df = pd.concat(stations_df,avail_df)
+        stations_df = pd.concat([stations_df,avail_df])
     except:
         stations_df = avail_df
 
         
     stations_df.to_csv(workingdir+'/stations_daily_df.csv')
+
+def get_status(workingdir):
+    stations_df = load_csv(workingdir+'/stations_daily_df.csv')
+    avail_bikes = stations_df.iloc[-1]
+    n_bikes     = sum(avail_bikes[avail_bikes>=0])
+    n_stations  = len(avail_bikes[avail_bikes>=0])
+    n_closed    = sum(avail_bikes[avail_bikes<0])
+
+
+    return {'bikes':n_bikes,'stations':n_stations}
+
     
-
-
 if __name__ == '__main__':
 
     if len(sys.argv) < 3:
@@ -175,3 +184,6 @@ if __name__ == '__main__':
 
     elif arg == '--stations':
         get_stations(workingdir)
+
+    elif arg == '--status':
+        get_status(workingdir)
