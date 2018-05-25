@@ -6,7 +6,7 @@ import datetime
 from pandas.io.json import json_normalize
 import urllib.request
 import sys
-
+from helpers import *
 
 def breakdown_ddf(dailydf,workingdir='./'):
 
@@ -120,13 +120,23 @@ def query_mobi_api(workingdir='.'):
 
 
 def get_stations(workingdir):
-    dailydf = pd.read_csv(workingdir+'/daily_mobi_dataframe.csv')
+    dailydf  = get_dailydf(workingdir)
     avail_df = pd.pivot_table(dailydf,columns='name',index='time',values='avl_bikes').iloc[-1]
     op_df    = pd.pivot_table(dailydf,columns='name',index='time',values='operative').iloc[-1]
 
     avail_df[op_df==False] = -1
 
-    print(avail_df)
+    avail_df = pd.DataFrame(avail_df).transpose()
+    avail_df.index = [x.strftime('%Y-%m-%d') for x in avail_df.index]
+
+    try:
+        stations_df = load_csv(workingdir+'/stations_daily_df.csv')
+        stations_df = pd.concat(stations_df,avail_df)
+    except:
+        stations_df = avail_df
+
+        
+    stations_df.to_csv(workingdir+'/stations_daily_df.csv')
     
 
 
