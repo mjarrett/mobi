@@ -189,4 +189,4 @@ if __name__ == '__main__':
         get_stations(workingdir)
 
     elif arg == '--status':
-        get_status(workingdir)
+        print(get_status(workingdir))
