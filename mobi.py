@@ -62,7 +62,9 @@ def update_dataframes(takendf, returneddf, activitydf,workingdir='./'):
         taken_hourly_df = pd.DataFrame()
 
     #taken_hourly_df = taken_hourly_df.drop_duplicates()
-    taken_hourly_df = taken_hourly_df.append(takendf.groupby(pd.Grouper(freq='H')).sum())
+#    taken_hourly_df = taken_hourly_df.append(takendf.groupby(pd.Grouper(freq='H')).sum())
+    taken_hourly_df = pd.concat([taken_hourly_df,takendf.groupby(pd.Grouper(freq='H')).sum()])
+
     taken_hourly_df = taken_hourly_df.groupby(taken_hourly_df.index).sum()
     taken_daily_df = taken_hourly_df.groupby(pd.Grouper(freq='D')).sum()
     taken_hourly_df.to_csv('{}/taken_hourly_df.csv'.format(workingdir))
@@ -75,10 +77,10 @@ def update_dataframes(takendf, returneddf, activitydf,workingdir='./'):
         returned_hourly_df = pd.DataFrame()
 
     #returned_hourly_df = returned_hourly_df.drop_duplicates()
-    returned_hourly_df = returned_hourly_df.append(returneddf.groupby(pd.Grouper(freq='H')).sum())
+#    returned_hourly_df = returned_hourly_df.append(returneddf.groupby(pd.Grouper(freq='H')).sum())
+    returned_hourly_df = pd.concat([returned_hourly_df,returneddf.groupby(pd.Grouper(freq='H')).sum()])
     returned_hourly_df = returned_hourly_df.groupby(returned_hourly_df.index).sum()
     returned_daily_df = returned_hourly_df.groupby(pd.Grouper(freq='D')).sum()
-    returned_hourly_df = returned_hourly_df.append(returneddf.groupby(pd.Grouper(freq='H')).sum())
     returned_hourly_df.to_csv('{}/returned_hourly_df.csv'.format(workingdir))
     returned_daily_df.to_csv('{}/returned_daily_df.csv'.format(workingdir))
 
@@ -89,7 +91,8 @@ def update_dataframes(takendf, returneddf, activitydf,workingdir='./'):
         activity_hourly_df = pd.DataFrame()
 
     #activity_hourly_df = activity_hourly_df.drop_duplicates()
-    activity_hourly_df = activity_hourly_df.append(activitydf.groupby(pd.Grouper(freq='H')).sum())
+    #activity_hourly_df = activity_hourly_df.append(activitydf.groupby(pd.Grouper(freq='H')).sum())
+    activity_hourly_df = pd.concat([activity_hourly_df,activitydf.groupby(pd.Grouper(freq='H')).sum()])
     activity_hourly_df = activity_hourly_df.groupby(activity_hourly_df.index).sum()
     activity_daily_df = activity_hourly_df.abs().groupby(pd.Grouper(freq='D')).sum()
     activity_hourly_df.to_csv('{}/activity_hourly_df.csv'.format(workingdir))
@@ -141,9 +144,9 @@ def get_stations(workingdir):
 def get_status(workingdir):
     stations_df = load_csv(workingdir+'/stations_daily_df.csv')
     avail_bikes = stations_df.iloc[-1]
-    n_bikes     = sum(avail_bikes[avail_bikes>=0])
-    n_stations  = len(avail_bikes[avail_bikes>=0])
-    n_closed    = sum(avail_bikes[avail_bikes<0])
+    n_bikes     = int(sum(avail_bikes[avail_bikes>=0]))
+    n_stations  = int(len(avail_bikes[avail_bikes>=0]))
+    n_closed    = int(sum(avail_bikes[avail_bikes<0]))
 
 
     return {'bikes':n_bikes,'stations':n_stations}
