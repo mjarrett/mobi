@@ -30,11 +30,11 @@ def make_station_map(date,fname):
 
     ax.set_extent([left,right,bottom,top ], ccrs.epsg(26910))
    
-    bikeways = addgeo('/home/msj/shapes/bikeways.shp',ax,facecolor=[1,1,1,0],edgecolor='green',alpha=1,zorder=95)
+    bikeways = addgeo('/home/msj/shapes/bikeways.shp',ax,facecolor="none",edgecolor='green',zorder=95)
 
-    coast,coastr = addgeo('/home/msj/shapes/shoreline2002.shp',ax,edgecolor='white',zorder=1)
+    coast,coastr = addgeo('/home/msj/shapes/shoreline2002.shp',ax,facecolor='#000000',zorder=1)
     #greenways = addgeo('/home/msj/shapes/greenways.shp',ax,edgecolor='green',alpha=1,zorder=90)
-    streets = addgeo('/home/msj/shapes/public_streets.shp',ax,edgecolor='black',alpha=0.2,zorder=96)
+    streets = addgeo('/home/msj/shapes/public_streets.shp',ax,edgecolor='black',alpha=0,zorder=96)
     
     
     #Load mobi daily data

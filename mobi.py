@@ -7,6 +7,10 @@ from pandas.io.json import json_normalize
 import urllib.request
 import sys
 from helpers import *
+from jinja2 import Environment, FileSystemLoader
+
+import plots
+import geomobi
 
 def breakdown_ddf(dailydf,workingdir='./'):
 
@@ -151,6 +155,54 @@ def get_status(workingdir):
 
     return {'bikes':n_bikes,'stations':n_stations}
 
+
+def update_html(workingdir):
+    
+    tddf = load_csv('{}/taken_daily_df.csv'.format(workingdir))
+    thdf = load_csv('{}/taken_hourly_df.csv'.format(workingdir))
+
+    tddf = tddf['2017-07':]
+    thdf = thdf['2017-07':]
+    
+    
+    # Station activity
+    sddf = load_csv('{}/stations_daily_df.csv'.format(workingdir))
+    active_stations = (sddf.iloc[-1]>-1).index  # index of active stations 
+
+    tdf = thdf.loc[:,active_stations].sum()
+    t24df = thdf.ix[-25:-1,active_stations].sum()
+    station24h = t24df.idxmax()
+    stationalltime = tdf.idxmax()
+
+    station24hmin = t24df.idxmin()
+    stationalltimemin = tdf.idxmin()
+
+    status = get_status(workingdir)
+
+
+
+    # Jinja context
+    context = {'lastupdated':time.strftime('%c'),
+               'station24h': station24h,
+               'stationalltime': stationalltime,
+               'station24hmin': station24hmin,
+               'stationalltimemin': stationalltimemin,
+               'bikes' : status['bikes'],
+               'stations' : status['stations']
+    }
+
+
+    j2_env = Environment(loader=FileSystemLoader('/home/msj/mobi/'),trim_blocks=True)
+    html = j2_env.get_template('index.html').render(context)
+
+    with open('/var/www/html/mobi/index.html','w') as outfile:
+    #with open('/home/msj/mobi/test.html','w') as outfile:
+
+        try:
+            outfile.write(html)
+        except:
+            print("hmmmm...")
+
     
 if __name__ == '__main__':
 
@@ -190,3 +242,23 @@ if __name__ == '__main__':
 
     elif arg == '--status':
         print(get_status(workingdir))
+        
+    elif arg == '--plots':
+        tddf = load_csv('{}/taken_daily_df.csv'.format(workingdir))
+        thdf = load_csv('{}/taken_hourly_df.csv'.format(workingdir))
+
+        tddf = tddf['2017-07':]
+        thdf = thdf['2017-07':]
+
+        imdir = '/var/www/html/mobi/images/'
+        yday = (datetime.datetime.now() - datetime.timedelta(1)).strftime('%Y-%m-%d')
+        
+        plots.Plot(tddf.sum(1),imdir=imdir).draw('alltime.png')
+        plots.Plot(tddf.sum(1).iloc[-30:],imdir=imdir).draw('lastmonth_daily.png',kind='bar',weather=True,highlight=True)
+        plots.Plot(thdf.sum(1).iloc[-7*24:-1],imdir=imdir).draw('lastweek_hourly.png',kind='line')
+        plots.Plot(tddf.sum(1),imdir=imdir).draw('alltime_rolling.png',weather=True,rolling=7)
+        geomobi.make_station_map(yday,imdir+'station_map_yesterday.png')
+                         
+                         
+    elif arg == '--html':
+        update_html(workingdir)
