@@ -252,11 +252,15 @@ if __name__ == '__main__':
 
         imdir = '/var/www/html/mobi/images/'
         yday = (datetime.datetime.now() - datetime.timedelta(1)).strftime('%Y-%m-%d')
+        yday_min7 = (datetime.datetime.now() - datetime.timedelta(8)).strftime('%Y-%m-%d')
+        yday_min31 = (datetime.datetime.now() - datetime.timedelta(31)).strftime('%Y-%m-%d')
         
         plots.Plot(tddf.sum(1),imdir=imdir).draw('alltime.png')
         plots.Plot(tddf.sum(1).iloc[-30:],imdir=imdir).draw('lastmonth_daily.png',kind='bar',weather=True,highlight=True)
         plots.Plot(thdf.sum(1).iloc[-7*24:-1],imdir=imdir).draw('lastweek_hourly.png',kind='line')
         plots.Plot(tddf.sum(1),imdir=imdir).draw('alltime_rolling.png',weather=True,rolling=7)
+        plots.Plot(thdf.sum(1).loc[yday_min7:yday],imdir=imdir).draw('lastweek_hourly_yesterday.png')
+        plots.Plot(tddf.sum(1).loc[yday_min31:yday],imdir=imdir).draw('lastmonth_daily_yesterday.png',kind='bar',weather=True,highlight=True)
         geomobi.make_station_map(yday,imdir+'station_map_yesterday.png')
                          
                          

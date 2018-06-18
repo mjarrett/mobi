@@ -71,14 +71,14 @@ class Plot():
         self.highlight = highlight
         
         
-        self.f, self.ax = plt.subplots()
+        self.f, self.ax = plt.subplots(figsize=(7,5))
         self.ax = self.__set_ax_props__(self.ax)
         
         if self.rolling is not None:
             self.df = self.df.rolling(self.rolling).mean()
 
         if self.weather == True:
-            self.f,(self.ax,self.wax) = plt.subplots(2,sharex=True,gridspec_kw={'height_ratios':[4.5,1]})
+            self.f,(self.ax,self.wax) = plt.subplots(2,sharex=True,gridspec_kw={'height_ratios':[4.5,1]},figsize=(7,5))
             self.ax = self.__set_ax_props__(self.ax)
             self.wax = self.__set_ax_props__(self.wax)
             self.wdf = vw.get_weather_range(self.df.index[0].strftime('%Y-%m'),(self.df.index[-1]-datetime.timedelta(1)).strftime('%Y-%m'))
@@ -96,11 +96,9 @@ class Plot():
             self.wax2.tick_params(axis='x',labelrotation=45)
 
         if self.kind=='line':
-            if self.highlight:
-                self.ax.plot(self.df[:-23].index,self.df[:-23].values,color=self.fg_color,alpha=0.6)
-                self.ax.plot(self.df[-24:].index,self.df[-24:].values,color=self.fg_color)
-            else:
-                self.ax.plot(self.df.index,self.df.values,color=self.fg_color)
+
+            line = self.ax.plot(self.df.index,self.df.values,color=self.fg_color)
+            self.ax.fill_between(self.df.index,0,self.df.values,color=self.fg_color,alpha=0.8)
 
         if self.kind=='bar':
             bars = self.ax.bar(self.df.index,self.df.values,color=self.fg_color)

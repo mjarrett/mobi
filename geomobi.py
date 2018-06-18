@@ -60,12 +60,12 @@ def make_station_map(date,fname):
     
     
     sizes = ddf['trips']
-    ax.scatter(ddf['long'],ddf['lat'],transform=ccrs.PlateCarree(),alpha=0.7,s=sizes,color=colors[0],zorder=100)
+    ax.scatter(ddf['long'],ddf['lat'],transform=ccrs.PlateCarree(),alpha=0.7,s=sizes,color=colors[1],zorder=100)
     
     
     # Dummy scatters for the legend
-    l1 = ax.scatter([0],[0], s=10, edgecolors='none',color=colors[0],alpha=0.7)
-    l2 = ax.scatter([0],[0], s=100, edgecolors='none',color=colors[0],alpha=0.7)
+    l1 = ax.scatter([0],[0], s=10, edgecolors='none',color=colors[1],alpha=0.7)
+    l2 = ax.scatter([0],[0], s=100, edgecolors='none',color=colors[1],alpha=0.7)
     labels=['10','100']
     ax.legend([l1,l2],labels,title='Station Activity\n{}'.format(date))
     
