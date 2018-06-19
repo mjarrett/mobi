@@ -75,7 +75,6 @@ def make_station_map(date,fname):
 
     ddf = pd.merge(trips, ddf, how='inner',on='name')
     
-    #make_station_map('2018-06-08','station_plot.png')
     plot = GeoPlot()
     plot.addgeo('/home/msj/shapes/bikeways.shp',facecolor="none",edgecolor='green',zorder=95)
     plot.addgeo('/home/msj/shapes/shoreline2002.shp',facecolor='#000000',zorder=1)
