@@ -81,7 +81,7 @@ def make_station_map(date,fname):
     #plot.addgeo('/home/msj/shapes/greenways.shp',ax,edgecolor='green',alpha=1,zorder=90)
     #plot.addgeo('/home/msj/shapes/public_streets.shp',ax,edgecolor='black',alpha=0,zorder=96)
     f = plot.draw(ddf,date)
-    f.savefig(fname)
+    f.savefig(fname,bbox_inches='tight',pad_inches=0.0,transparent = True)
     
 if __name__=='__main__':
     make_station_map('2018-05-11','test.png')
