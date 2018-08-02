@@ -33,13 +33,24 @@ class Plot():
         self.imdir = imdir
         
         
-        colors = sns.color_palette()
-        self.bg_color = '#000000'
-        self.fg_color = colors[1]
-        self.fg_color2 = colors[0]
-        self.ax_color = '#ffffff'
+#         colors = sns.color_palette()
+#         self.bg_color = '#000000'
+#         self.fg_color = colors[1]
+#         self.fg_color2 = colors[0]
+#         self.ax_color = '#ffffff'
+        
+        colors = [ "dusty purple","windows blue", "amber", "greyish", "faded green"]
+        self.colors = sns.xkcd_palette(colors)
+        self.bg_color = '#ffffff'
+        self.fg_color = self.colors[4]
+        self.fg_color2 = self.colors[1]
+        self.fg_color3 = self.colors[2]
+        self.ax_color = self.colors[3]
         
         
+        self.f, self.ax = plt.subplots(figsize=(7,5))
+        self.ax = self.__set_ax_props__(self.ax)
+    
     
     def __set_ax_props__(self,ax):
         
@@ -71,8 +82,7 @@ class Plot():
         self.highlight = highlight
         
         
-        self.f, self.ax = plt.subplots(figsize=(7,5))
-        self.ax = self.__set_ax_props__(self.ax)
+
         
         if self.rolling is not None:
             self.df = self.df.rolling(self.rolling).mean()
@@ -87,9 +97,11 @@ class Plot():
             self.wax.bar(self.wdf.index,self.wdf['Total Rainmm'],color=self.fg_color2)
             self.wax2 = self.wax.twinx()
             self.wax2 = self.__set_ax_props__(self.wax2)
-            self.wax2.plot(self.wdf.index,self.wdf['Max Temp'],color='yellow')
+            self.wax2.plot(self.wdf.index,self.wdf['Max Temp'],color=self.fg_color3)
             self.wax2.set_ylabel('High ($^\circ$C)')
+            self.wax2.yaxis.label.set_color(self.fg_color3)
             self.wax.set_ylabel('Rain (mm)')
+            self.wax.yaxis.label.set_color(self.fg_color2)
             self.wax.spines['right'].set_visible(True)
             self.wax2.spines['right'].set_visible(True)
             self.wax.tick_params(axis='x',labelrotation=45)
@@ -111,6 +123,43 @@ class Plot():
 
         self.f.savefig(self.imdir+self.fname,bbox_inches='tight', facecolor=self.bg_color)
 
+
+def cumsum(thdf,date,fname):
+    colors = [ "dusty purple","windows blue", "amber", "greyish", "faded green"]
+    colors = sns.xkcd_palette(colors)
+    bg_color = '#ffffff'
+    fg_color = colors[4]
+    fg_color2 = colors[1]
+    fg_color3 = colors[2]
+    ax_color = colors[3]
+    f,ax = plt.subplots()  
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.tick_params(axis='x',labelrotation=45)
+    ax.patch.set_facecolor(bg_color)
+    ax.xaxis.set_tick_params(color=ax_color, labelcolor=ax_color)
+    ax.yaxis.set_tick_params(color=ax_color, labelcolor=ax_color)
+    for spine in ax.spines.values():
+        spine.set_color(ax_color)
+        
+    for i,df in thdf.groupby(pd.Grouper(freq='d')):
+        df = df.sum(1).cumsum()
+        df.index = df.index.map(lambda x: x.strftime('%H'))
+        ax.plot(df.index[1:],df[:-1],alpha=0.1,color='gray')
+    df = thdf[date].sum(1).cumsum()
+    df.index = df.index.map(lambda x: x.strftime('%H'))
+    ax.plot(df.index[1:],df[:-1],alpha=1,color=colors[4])
+    ax.scatter(df.index[1:],df[:-1],alpha=1,color=colors[4])
+    ax.set_ylabel("Daily Cumulative Trips",color=ax_color)
+    ax.set_xlabel("Hour",color=ax_color)
+    import matplotlib.lines as mlines
+    gray_line = mlines.Line2D([], [], color='gray',  label="{} so far".format(date[:4]))
+    green_line= mlines.Line2D([], [], color=colors[4], marker='.',label="{}".format(date))
+
+    ax.legend(handles=[green_line,gray_line])
+    f.savefig(fname)
+         
+        
 if __name__ == '__main__':
     
     tddf = mobi.load_csv('/data/mobi/data/taken_daily_df.csv')
@@ -119,39 +168,16 @@ if __name__ == '__main__':
     tddf = tddf['2017-07':]
     thdf = thdf['2017-07':]
     
-    Plot(tddf.sum(1)).draw('alltime.png')
-    Plot(tddf.sum(1).iloc[-30:]).draw('lastmonth_daily.png',kind='bar',weather=True,highlight=True)
-    Plot(thdf.sum(1).iloc[-7*24:-1]).draw('lastweek_hourly.png',kind='line')
-    Plot(tddf.sum(1)).draw('alltime_rolling.png',weather=True,rolling=7)
-# make_daily_plot(tddf.sum(1),'alltime.png')
-# make_daily_plot(tddf.sum(1).iloc[-30:],'lastmonth_daily.png',kind='bar',weather=True,highlight=True)
-# make_daily_plot(thdf.sum(1).iloc[-7*24:-1],'lastweek_hourly.png',weather=False,highlight=False)
-# make_daily_plot(tddf.sum(1),'alltime_rolling.png',weather=True,rolling=7)
+    #Plot(tddf.sum(1)).draw('alltime.png')
+    #Plot(tddf.sum(1).iloc[-30:]).draw('lastmonth_daily.png',kind='bar',weather=True,highlight=True)
+    #Plot(thdf.sum(1).iloc[-7*24:-1]).draw('lastweek_hourly.png',kind='line')
+    #Plot(tddf.sum(1)).draw('alltime_rolling.png',weather=True,rolling=7)
+    
+    #plot = Plot(thdf.sum(1).loc['2018-07-17'].cumsum())
 
-
-# yday = (datetime.datetime.now() - datetime.timedelta(1)).strftime('%Y-%m-%d')
-# yday_min7 = (datetime.datetime.now() - datetime.timedelta(8)).strftime('%Y-%m-%d')
-# yday_min31 = (datetime.datetime.now() - datetime.timedelta(31)).strftime('%Y-%m-%d')
-
-
-# make_daily_plot(thdf.sum(1).loc[yday_min7:yday],'lastweek_hourly_yesterday.png')
-# make_daily_plot(tddf.sum(1).loc[yday_min31:yday],'lastmonth_daily_yesterday.png',kind='bar',weather=True,highlight=True)
-
-# geomobi.make_station_map(yday,'/var/www/html/mobi/images/station_map_yesterday.png')
-
-
-# # Station activity
-# sddf = mobi.load_csv('/data/mobi/data/stations_daily_df.csv')
-# active_stations = (sddf.iloc[-1]>-1).index  # index of active stations 
-
-# tdf = thdf.loc[:,active_stations].sum()
-# t24df = thdf.ix[-25:-1,active_stations].sum()
-# station24h = t24df.idxmax()
-# stationalltime = tdf.idxmax()
-
-# station24hmin = t24df.idxmin()
-# stationalltimemin = tdf.idxmin()
-
-# status = mobi.get_status('/data/mobi/data/')
+    
+    cumsum(thdf['2018-01':],'2018-08-02','cumsumtest.png')
+        
+        
 
 
