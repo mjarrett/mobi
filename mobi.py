@@ -274,7 +274,7 @@ if __name__ == '__main__':
         plots.Plot(thdf.sum(1).loc[yday_min7:yday],imdir=imdir).draw('lastweek_hourly_yesterday.png')
         
         plots.cumsum(thdf[thisyear:],today,imdir+'today_cumsum.png')
-        plots.cumsum(thdf[thisyear:],today,imdir+'yesterday_cumsum.png')
+        plots.cumsum(thdf[thisyear:],yday,imdir+'yesterday_cumsum.png')
         plots.Plot(tddf.sum(1).loc[yday_min31:yday],imdir=imdir).draw('lastmonth_daily_yesterday.png',kind='bar',weather=True,highlight=True)
         geomobi.make_station_map(yday,imdir+'station_map_yesterday.png')
         geomobi.make_station_ani(yday,imdir+'station_ani_yesterday.gif')

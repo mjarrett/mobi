@@ -144,12 +144,12 @@ def cumsum(thdf,date,fname):
         
     for i,df in thdf.groupby(pd.Grouper(freq='d')):
         df = df.sum(1).cumsum()
-        df.index = df.index.map(lambda x: x.strftime('%H'))
-        ax.plot(df.index[1:],df[:-1],alpha=0.1,color='gray')
+        df.index = df.index.map(lambda x: x.strftime('%H:%M'))
+        ax.plot(df.index,df,alpha=0.1,color='gray')
     df = thdf[date].sum(1).cumsum()
-    df.index = df.index.map(lambda x: x.strftime('%H'))
-    ax.plot(df.index[1:],df[:-1],alpha=1,color=colors[4])
-    ax.scatter(df.index[1:],df[:-1],alpha=1,color=colors[4])
+    df.index = df.index.map(lambda x: x.strftime('%H:%M'))
+    ax.plot(df.index,df,alpha=1,color=colors[4])
+    ax.scatter(df.index,df,alpha=1,color=colors[4])
     ax.set_ylabel("Daily Cumulative Trips",color=ax_color)
     ax.set_xlabel("Hour",color=ax_color)
     import matplotlib.lines as mlines
@@ -158,7 +158,43 @@ def cumsum(thdf,date,fname):
 
     ax.legend(handles=[green_line,gray_line])
     f.savefig(fname)
-         
+        
+        
+def cumsum_monthly(thdf,fname):
+    colors = [ "dusty purple","windows blue", "amber", "greyish", "faded green"]
+    colors = sns.xkcd_palette(colors)
+    bg_color = '#ffffff'
+    fg_color = colors[4]
+    fg_color2 = colors[1]
+    fg_color3 = colors[2]
+    ax_color = colors[3]
+    f,ax = plt.subplots()  
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.tick_params(axis='x',labelrotation=45)
+    ax.patch.set_facecolor(bg_color)
+    ax.xaxis.set_tick_params(color=ax_color, labelcolor=ax_color)
+    ax.yaxis.set_tick_params(color=ax_color, labelcolor=ax_color)
+    for spine in ax.spines.values():
+        spine.set_color(ax_color)
+        
+    for i,df in thdf.groupby(pd.Grouper(freq='d')):
+        df = df.sum(1).cumsum()
+        df.index = df.index.map(lambda x: x.strftime('%B:%H'))
+        ax.plot(df.index,df,alpha=0.1,color='gray')
+        print(df.sum())
+    
+    ax.set_ylabel("Daily Cumulative Trips",color=ax_color)
+    #ax.set_xlabel("Hour",color=ax_color)
+    locs = ax.get_xticks()
+    ax.set_xticks([x for x in locs if x%24==0])
+    #print([x for x in ax.get_xticklabels()])
+    #ax.set_xticklabels([x for x in ax.get_xticklabels()])
+    #gray_line = mlines.Line2D([], [], color='gray',  label="{} so far".format(date[:4]))
+    #green_line= mlines.Line2D([], [], color=colors[4], marker='.',label="{}".format(date))
+    #ax.legend(handles=[green_line,gray_line])
+    f.tight_layout()
+    f.savefig(fname)
         
 if __name__ == '__main__':
     
@@ -176,7 +212,7 @@ if __name__ == '__main__':
     #plot = Plot(thdf.sum(1).loc['2018-07-17'].cumsum())
 
     
-    cumsum(thdf['2018-01':],'2018-08-02','cumsumtest.png')
+    cumsum_monthly(thdf['2018-05'],'cumsumtest.png')
         
         
 
