@@ -141,13 +141,18 @@ def cumsum(thdf,date,fname):
     ax.yaxis.set_tick_params(color=ax_color, labelcolor=ax_color)
     for spine in ax.spines.values():
         spine.set_color(ax_color)
-        
-    for i,df in thdf.groupby(pd.Grouper(freq='d')):
+    
+    def cumsum_fix(df):
         df = df.sum(1).cumsum()
         df.index = df.index.map(lambda x: x.strftime('%H:%M'))
-        ax.plot(df.index,df,alpha=0.1,color='gray')
-    df = thdf[date].sum(1).cumsum()
-    df.index = df.index.map(lambda x: x.strftime('%H:%M'))
+        df = df.shift()
+        df.iloc[0] = 0
+        return df
+        
+    for i,df in thdf.groupby(pd.Grouper(freq='d')):
+        df = cumsum_fix(df)
+        ax.plot(df.index,df,color='gray',alpha=0.1)
+    
     ax.plot(df.index,df,alpha=1,color=colors[4])
     ax.scatter(df.index,df,alpha=1,color=colors[4])
     ax.set_ylabel("Daily Cumulative Trips",color=ax_color)
@@ -155,7 +160,7 @@ def cumsum(thdf,date,fname):
     import matplotlib.lines as mlines
     gray_line = mlines.Line2D([], [], color='gray',  label="{} so far".format(date[:4]))
     green_line= mlines.Line2D([], [], color=colors[4], marker='.',label="{}".format(date))
-
+    
     ax.legend(handles=[green_line,gray_line])
     f.savefig(fname)
         
@@ -212,7 +217,7 @@ if __name__ == '__main__':
     #plot = Plot(thdf.sum(1).loc['2018-07-17'].cumsum())
 
     
-    cumsum_monthly(thdf['2018-05'],'cumsumtest.png')
+    cumsum(thdf['2018-01':],'2018-08-05','cumsumtest.png')
         
         
 
