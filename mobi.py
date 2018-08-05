@@ -267,15 +267,17 @@ if __name__ == '__main__':
         yday_min7 = (datetime.datetime.now() - datetime.timedelta(8)).strftime('%Y-%m-%d')
         yday_min31 = (datetime.datetime.now() - datetime.timedelta(31)).strftime('%Y-%m-%d')
         
-        plots.Plot(tddf.sum(1),imdir=imdir).draw('alltime.png')
-        plots.Plot(tddf.sum(1).iloc[-30:],imdir=imdir).draw('lastmonth_daily.png',kind='bar',weather=True,highlight=True)
-        plots.Plot(thdf.sum(1).iloc[-7*24:-1],imdir=imdir).draw('lastweek_hourly.png',kind='line')
-        plots.Plot(tddf.sum(1),imdir=imdir).draw('alltime_rolling.png',weather=True,rolling=7)
-        plots.Plot(thdf.sum(1).loc[yday_min7:yday],imdir=imdir).draw('lastweek_hourly_yesterday.png')
+        plots.Plot().draw(tddf.sum(1),imdir+'alltime.png')
+        plots.Plot().draw(tddf.sum(1).iloc[-30:],imdir+'lastmonth_daily.png',kind='bar',weather=True,highlight=True)
+        plots.Plot().draw(thdf.sum(1).iloc[-7*24:-1],imdir+'lastweek_hourly.png',kind='line')
+        plots.Plot().draw(tddf.sum(1),imdir+'alltime_rolling.png',weather=True,rolling=7)
+        plots.Plot().draw(thdf.sum(1).loc[yday_min7:yday],imdir+'lastweek_hourly_yesterday.png')
         
-        plots.cumsum(thdf[thisyear:],today,imdir+'today_cumsum.png')
-        plots.cumsum(thdf[thisyear:],yday,imdir+'yesterday_cumsum.png')
-        plots.Plot(tddf.sum(1).loc[yday_min31:yday],imdir=imdir).draw('lastmonth_daily_yesterday.png',kind='bar',weather=True,highlight=True)
+        plots.Plot().draw(thdf[thisyear:],imdir+'today_cumsum.png',kind='cumsum')
+        plots.Plot().draw(thdf[thisyear:yday],imdir+'yesterday_cumsum.png',kind='cumsum')
+
+        plots.Plot().draw(tddf.sum(1).loc[yday_min31:yday],imdir+'lastmonth_daily_yesterday.png',kind='bar',weather=True,highlight=True)
+        
         geomobi.make_station_map(yday,imdir+'station_map_yesterday.png')
         geomobi.make_station_ani(yday,imdir+'station_ani_yesterday.gif')
                          
