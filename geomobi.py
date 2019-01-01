@@ -1,5 +1,5 @@
 import matplotlib as mpl
-mpl.use('AGG')
+#mpl.use('AGG')
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
@@ -19,7 +19,8 @@ class GeoPlot(object):
         #self.colors=sns.color_palette()
         colors = [ "dusty purple","windows blue", "amber", "greyish", "faded green"]
         self.colors = sns.xkcd_palette(colors)
-    
+        self.fg_color=self.colors[1]
+        self.fg_color2=self.colors[4]
         self.f, self.ax = plt.subplots()
         self.f.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
         self.ax = plt.axes(projection=ccrs.epsg(26910),frameon=False)
@@ -27,14 +28,14 @@ class GeoPlot(object):
         
                 
 
-        self.left = 485644
-        self.right = 495313
+        self.left = 485844
+        self.right = 495513
         self.bottom = 5453579
         self.top = 5462500
 
         self.ax.set_extent([self.left,self.right,self.bottom,self.top ], ccrs.epsg(26910))
         
-        self.ax.text(self.left+5000,self.bottom+200,'@VanBikeShareBot',color=self.colors[1],size=18,alpha=0.8)
+        self.ax.text(self.right,self.bottom+200,'@VanBikeShareBot',color=self.colors[1],size=18,alpha=0.8,horizontalalignment='right')
         
         
     def addgeo(self,shapef,edgecolor='black',facecolor='white',alpha=1,zorder=1):
@@ -67,10 +68,12 @@ class GeoPlot(object):
     
     
 def make_station_map(date,fname):
-    workingdir='/data/mobi/data'
+    workingdir='/data/mobi/data/'
    
     #Load mobi daily data
-    addf = mobi.load_csv(workingdir+'/activity_daily_df.csv')
+    tddf = mobi.load_csv(workingdir+'/taken_daily_df.csv')
+    rddf = mobi.load_csv(workingdir+'/returned_daily_df.csv')
+    addf = tddf + rddf
     ddf = mobi.get_dailydf(workingdir)
 
 
@@ -78,11 +81,15 @@ def make_station_map(date,fname):
     trips = addf.loc[date].reset_index()
     trips.columns = ['name','trips']
 
-    ddf = ddf[['coordinates','name']].drop_duplicates()
-    ddf = pd.concat([ddf['coordinates'].str.split(',', expand=True),ddf['name']],axis=1)
-    ddf.columns = ['lat','long','name']
-    ddf.lat = ddf.lat[ddf.lat != ''].astype('float')
-    ddf.long = ddf.long[ddf.long != ''].astype('float')
+    ddf['name'] = ddf['name'].drop_duplicates()
+    ddf = ddf[['coordinates','name']]
+    #ddf = ddf[['coordinates','name']].drop_duplicates()
+    ddf['lat'] = ddf['coordinates'].map(lambda x: x[0])
+    ddf['long'] = ddf['coordinates'].map(lambda x: x[1])
+    #ddf = pd.concat([ddf['coordinates'].str.split(',', expand=True),ddf['name']],axis=1)
+    #ddf.columns = ['lat','long','name']
+    #ddf.lat = ddf.lat[ddf.lat != ''].astype('float')
+    #ddf.long = ddf.long[ddf.long != ''].astype('float')
 
     ddf = pd.merge(trips, ddf, how='inner',on='name')
     
@@ -103,17 +110,24 @@ def make_station_ani(date1,fname,days=1,spark=True):
     
 
     #Load mobi daily data
-    ahdf = mobi.load_csv(workingdir+'/activity_hourly_df.csv')
+    thdf = mobi.load_csv(workingdir+'/taken_hourly_df.csv')
+    rhdf = mobi.load_csv(workingdir+'/returned_hourly_df.csv')
+    ahdf = thdf	+ rhdf
+    
     ddf = mobi.get_dailydf(workingdir)
 
     # Get yesterday's trip counts
     trips = ahdf.loc[date1:date2].iloc[0].reset_index()
     trips.columns = ['name','trips']
-    ddf = ddf[['coordinates','name']].drop_duplicates()
-    ddf = pd.concat([ddf['coordinates'].str.split(',', expand=True),ddf['name']],axis=1)
-    ddf.columns = ['lat','long','name']
-    ddf.lat = ddf.lat[ddf.lat != ''].astype('float')
-    ddf.long = ddf.long[ddf.long != ''].astype('float')
+    ddf['name'] = ddf['name'].drop_duplicates()
+    ddf = ddf[['coordinates','name']]
+    ddf['lat'] = ddf['coordinates'].map(lambda x: x[0])
+    ddf['long'] = ddf['coordinates'].map(lambda x: x[1])
+    #ddf = ddf[['coordinates','name']].drop_duplicates()
+    #ddf = pd.concat([ddf['coordinates'].str.split(',', expand=True),ddf['name']],axis=1)
+    #ddf.columns = ['lat','long','name']
+    #ddf.lat = ddf.lat[ddf.lat != ''].astype('float')
+    #ddf.long = ddf.long[ddf.long != ''].astype('float')
 
     df = pd.merge(trips, ddf, how='inner',on='name')
     plot = mobi.geomobi.GeoPlot()
@@ -122,23 +136,23 @@ def make_station_ani(date1,fname,days=1,spark=True):
     #plot.addgeo('/home/msj/shapes/greenways.shp',ax,edgecolor='green',alpha=1,zorder=90)
     #plot.addgeo('/home/msj/shapes/public_streets.shp',ax,edgecolor='black',alpha=0,zorder=96)
 
-    f = plot.f
-    f.set_facecolor([0.5,0.5,0.5])
-    f.set_size_inches(5,4.7)
+    
+    plot.f.set_facecolor([0.5,0.5,0.5])
+    plot.f.set_size_inches(5,4.7)
     #f.set_edgecolor('gray')
-    f.subplots_adjust(left=-0.1, right=1.1, bottom=0, top=1)
+    plot.f.subplots_adjust(left=-0.1, right=1.1, bottom=0, top=1)
     
     
     if spark==True:
         # Add small plot of total activity
-        ax2 = f.add_axes([0.02, 0.65, 0.2, 0.2])
+        ax2 = plot.f.add_axes([0.02, 0.65, 0.2, 0.2])
         ax2.patch.set_alpha(0)
         ax2.set_axis_off()
         scatter2, = ax2.plot(ahdf[date1:date2].sum(1).index[0],ahdf[date1:date2].sum(1).iloc[0],color=plot.colors[1],marker='o')
         ax2.plot(ahdf[date1:date2].sum(1),color=plot.colors[1])
 
     
-    ax = f.axes[0]
+    ax = plot.f.axes[0]
     stations = ax.scatter(df.long,df.lat,color=plot.colors[1],alpha=0.7,s=10*df['trips'],zorder=100,transform=ccrs.PlateCarree())
 
     # Dummy scatters for the legend
@@ -176,7 +190,7 @@ def make_station_ani(date1,fname,days=1,spark=True):
             scatter2.set_data(ahdf[date1:date2].sum(1).index[i],ahdf[date1:date2].sum(1).iloc[i])
     
     frames=len(ahdf.loc[date1:date2].index)
-    ani = animation.FuncAnimation(f, run,frames=frames, interval=1200)
+    ani = animation.FuncAnimation(plot.f, run,frames=frames, interval=1200)
     ani.save(fname,writer='imagemagick')
     
 if __name__=='__main__':

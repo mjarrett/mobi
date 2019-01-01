@@ -5,7 +5,13 @@ def load_csv(f):
     return df
 
 def get_dailydf(d):
-    return pd.read_csv(d+'/daily_mobi_dataframe.csv',parse_dates=['time'])
+    ddf = pd.read_csv(d+'/daily_mobi_dataframe.csv',parse_dates=['time'])
+    ddf['coordinates'] = ddf['coordinates'].map(lambda x: x.split(','))
+    ddf['coordinates'] = ddf['coordinates'].map(lambda x: [float(x[0]),float(x[1])])
+    return ddf
+    
+# ddf = get_dailydf('/data/mobi/data/')
+# print(ddf['coordinates'])
 
 
 

@@ -1,3 +1,7 @@
+if __name__ == '__main__': 
+    import matplotlib as mpl
+    mpl.use('AGG')
+
 import pandas as pd
 import os
 import time
@@ -205,6 +209,8 @@ def update_html(workingdir):
 
     
 if __name__ == '__main__':
+    
+
 
     if len(sys.argv) < 3:
         usage = """
@@ -248,7 +254,7 @@ if __name__ == '__main__':
         thdf = load_csv('{}/taken_hourly_df.csv'.format(workingdir))
 
         #tddf = tddf['2017-07':]
-        thdf = thdf['2017-07':]
+        #thdf = thdf['2017-07':]
         tddf = thdf.groupby(pd.Grouper(freq='D')).sum()
         
         ######## HACK TO FIX FIREWORKS REBALANCING
@@ -257,7 +263,7 @@ if __name__ == '__main__':
             if x>20:
                 return x//2
             else: return x
-        thdf.loc['2018-07-28 11:00:00'] = thdf.loc['2018-07-28 10:00:00'].map(fix)
+        #thdf.loc['2018-07-28 11:00:00'] = thdf.loc['2018-07-28 10:00:00'].map(fix)
         
         
         imdir = '/var/www/html/mobi/images/'
@@ -266,8 +272,15 @@ if __name__ == '__main__':
         yday = (datetime.datetime.now() - datetime.timedelta(1)).strftime('%Y-%m-%d')
         yday_min7 = (datetime.datetime.now() - datetime.timedelta(8)).strftime('%Y-%m-%d')
         yday_min31 = (datetime.datetime.now() - datetime.timedelta(31)).strftime('%Y-%m-%d')
+
+
+        #print(yday)
+        #print(yday_min7)
+
+        #print(thdf.sum(1).loc[yday_min7:yday])
+
         
-        plots.Plot().draw(tddf.sum(1),imdir+'alltime.png')
+        plots.Plot().draw(tddf.sum(1).iloc[-365:],imdir+'lastyear_daily.png',weather=True)
         plots.Plot().draw(tddf.sum(1).iloc[-30:],imdir+'lastmonth_daily.png',kind='bar',weather=True,highlight=True)
         plots.Plot().draw(thdf.sum(1).iloc[-7*24:-1],imdir+'lastweek_hourly.png',kind='line')
         plots.Plot().draw(tddf.sum(1),imdir+'alltime_rolling.png',weather=True,rolling=7)
@@ -277,7 +290,9 @@ if __name__ == '__main__':
         plots.Plot().draw(thdf[thisyear:yday],imdir+'yesterday_cumsum.png',kind='cumsum')
 
         plots.Plot().draw(tddf.sum(1).loc[yday_min31:yday],imdir+'lastmonth_daily_yesterday.png',kind='bar',weather=True,highlight=True)
-        
+
+
+        #print(yday)
         geomobi.make_station_map(yday,imdir+'station_map_yesterday.png')
         geomobi.make_station_ani(yday,imdir+'station_ani_yesterday.gif')
                          

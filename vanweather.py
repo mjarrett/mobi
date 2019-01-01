@@ -5,7 +5,10 @@ from datetime import datetime
 
 def get_monthly_weather(year,month):
 
-    baseurl='http://climate.weather.gc.ca/climate_data/daily_data_e.html?hlyRange=2013-06-11%7C2017-05-06&dlyRange=2013-06-13%7C2017-05-06&mlyRange=%7C&StationID=51442&Prov=BC&urlExtension=_e.html&searchType=stnName&optLimit=yearRange&StartYear=1840&EndYear={1}&selRowPerPage=25&Line=39&searchMethod=contains&Month={0}&Day=1&txtStationName=vancouver&timeframe=2&Year={1}'.format(month,year)
+    # update weather query for vancouver harbour instead of YVR
+    baseurl='http://climate.weather.gc.ca/climate_data/daily_data_e.html?hlyRange=1976-01-20%7C2018-09-02&dlyRange=1925-11-01%7C2018-09-01&mlyRange=1925-01-01%7C2007-02-01&StationID=888&Prov=BC&urlExtension=_e.html&searchType=stnName&optLimit=specDate&StartYear=1840&EndYear=2018&selRowPerPage=25&Line=0&searchMethod=contains&Month={0}&Day=1&txtStationName=vancouver+harbour&timeframe=2&Year={1}'.format(month,year)    
+    
+#    baseurl='http://climate.weather.gc.ca/climate_data/daily_data_e.html?hlyRange=2013-06-11%7C2017-05-06&dlyRange=2013-06-13%7C2017-05-06&mlyRange=%7C&StationID=51442&Prov=BC&urlExtension=_e.html&searchType=stnName&optLimit=yearRange&StartYear=1840&EndYear={1}&selRowPerPage=25&Line=39&searchMethod=contains&Month={0}&Day=1&txtStationName=vancouver&timeframe=2&Year={1}'.format(month,year)
 
 #    baseurl='http://climate.weather.gc.ca/climate_data/hourly_data_e.html?hlyRange=1976-01-20%7C2018-05-19&dlyRange=1925-11-01%7C2018-05-18&mlyRange=1925-01-01%7C2007-02-01&StationID=888&Prov=BC&urlExtension=_e.html&searchType=stnName&optLimit=specDate&StartYear=1840&EndYear={1}&selRowPerPage=25&Line=1&searchMethod=contains&Month={0}&Day=1&txtStationName=vancouver&timeframe=1&Year={1}'.format(month,year)
 
@@ -13,7 +16,7 @@ def get_monthly_weather(year,month):
     #print(baseurl)
 
     df = pd.read_html(baseurl,header=0)[0]
-
+ 
     df = df.iloc[1:-4]
     #print(df.columns[1:])
     #print(['Day'] + df.columns[1:])

@@ -3,9 +3,6 @@
 
 
 import matplotlib as mpl
-mpl.use('AGG')
-
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,24 +24,28 @@ import seaborn as sns
 
 
 class BasePlot():
-    def __init__(self):
+    def __init__(self,n=1,m=1):
 
         
-        colors = [ "dusty purple","windows blue", "amber", "greyish", "faded green"]
+        colors = [ "windows blue", "faded green","dusty purple", "amber", "greyish"]
         self.colors = sns.xkcd_palette(colors)
+        mpl.rcParams['axes.prop_cycle'] = mpl.cycler('color',self.colors)
         self.bg_color = '#ffffff'
-        self.fg_color = self.colors[4]
-        self.fg_color2 = self.colors[1]
-        self.fg_color3 = self.colors[2]
-        self.ax_color = self.colors[3]
+        self.fg_color = self.colors[1]
+        self.fg_color2 = self.colors[0]
+        self.fg_color3 = self.colors[3]
+        self.ax_color = self.colors[4]
         
         
-        self.f, self.ax = plt.subplots(figsize=(7,5))
+        self.f, self.ax = plt.subplots(n,m,figsize=(7,5))
         
 class Plot(BasePlot):
-    def __init__(self):
-        super().__init__()
-        self.ax = self.set_ax_props()
+    def __init__(self,n=1,m=1):
+        super().__init__(n,m)
+        if type(self.ax) == np.ndarray:
+            self.ax = [self.set_ax_props(x) for x in self.ax]
+        else:
+            self.ax = self.set_ax_props()
         
     
     
@@ -52,8 +53,9 @@ class Plot(BasePlot):
         if ax == None:
             ax = self.ax
         
+        
         ax.set_ylabel("Trips",color=self.ax_color)    
-        ax.set_xlabel("",color=self.fg_color)
+        ax.set_xlabel("",color=self.ax_color)
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
         ax.tick_params(axis='x',labelrotation=45)
@@ -66,7 +68,8 @@ class Plot(BasePlot):
 
         return ax
 
-        
+
+    
     def draw(self,df,fname,kind='line',weather=False,rolling=None,highlight=False):
         self.df = df               
         self.fname = fname
@@ -88,7 +91,7 @@ class Plot(BasePlot):
             self.wdf = vw.get_weather_range(self.df.index[0].strftime('%Y-%m'),(self.df.index[-1]-datetime.timedelta(1)).strftime('%Y-%m'))
             self.wdf = self.wdf.loc[[x for x in self.wdf.index if x in self.df.index],:]
 
-            self.wax.bar(self.wdf.index,self.wdf['Total Rainmm'],color=self.fg_color2)
+            self.wax.bar(self.wdf.index,self.wdf['Total Precipmm'],color=self.fg_color2)
             self.wax2 = self.wax.twinx()
             self.wax2 = self.set_ax_props(self.wax2)
             self.wax2.plot(self.wdf.index,self.wdf['Max Temp'],color=self.fg_color3)
@@ -189,7 +192,7 @@ if __name__ == '__main__':
     
     #cumsum(thdf['2018-01':],'2018-08-05','cumsumtest.png')
     #print(thdf['2018-01':'2018-08-04'])
-    Plot().draw(thdf['2018-01':'2018-08-04'],'cumsumtest.png',kind='cumsum')    
+    Plot().draw(thdf['2018-01':'2018-09-25'],'cumsumtest.png',kind='cumsum')    
         
 
 
