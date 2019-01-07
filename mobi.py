@@ -15,6 +15,7 @@ from jinja2 import Environment, FileSystemLoader
 
 import plots
 import geomobi
+from mobi_system_data import *
 
 def breakdown_ddf(dailydf,workingdir='./'):
 
@@ -237,7 +238,9 @@ if __name__ == '__main__':
         # Rename daily df
         timestr = time.strftime("%Y%m%d-%H%M%S")
         os.rename('{}/daily_mobi_dataframe.csv'.format(workingdir),'{}/backups/daily_mobi_dataframe.csv_BAK_{}'.format(workingdir,timestr))
-
+        # Update stations dataframe:
+        #sdf = load_csv('{}/stations_df.csv'.format(workingdir))
+        update_stations_df(workingdir)
 
     elif arg == '--query':
         query_mobi_api(workingdir=workingdir)
