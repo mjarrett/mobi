@@ -26,9 +26,7 @@ import seaborn as sns
 class BasePlot():
     def __init__(self,n=1,m=1):
 
-        
-        colors = [ "windows blue", "faded green","dusty purple", "amber", "greyish"]
-        self.colors = sns.xkcd_palette(colors)
+        self.colors = ['#3778bf','#7bb274','#825f87','#feb308','#59656d']
         mpl.rcParams['axes.prop_cycle'] = mpl.cycler('color',self.colors)
         self.bg_color = '#ffffff'
         self.fg_color = self.colors[1]
@@ -68,10 +66,13 @@ class Plot(BasePlot):
 
         return ax
 
-    def title(self,titletext):
-        self.f.suptitle(titletext,color=self.ax_color,horizontalalignment ='right')
+    def title(self,titletext,x=0.02,y=0.98,horizontalalignment='left',**kwargs):
+        self.f.suptitle(titletext,x=x,y=y,color=self.ax_color,horizontalalignment=horizontalalignment,**kwargs)
 
-    
+    def tight_layout(self,*args,**kwargs): 
+        self.f.tight_layout(rect=[0, 0.03, 1, 0.95],*args,**kwargs)
+
+
     def draw(self,df,fname,kind='line',weather=False,rolling=None,highlight=False):
         self.df = df               
         self.fname = fname
@@ -81,7 +82,7 @@ class Plot(BasePlot):
         self.highlight = highlight
         
         
-
+    
         
         if self.rolling is not None:
             self.df = self.df.rolling(self.rolling).mean()

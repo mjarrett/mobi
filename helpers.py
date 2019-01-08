@@ -5,7 +5,7 @@ def load_csv(f):
     return df
 
 def get_dailydf(d):
-    ddf = pd.read_csv(d+'/daily_mobi_dataframe.csv',parse_dates=['time'])
+    ddf = pd.read_csv('{}/daily_mobi_dataframe.csv'.format(d),parse_dates=['time'])
     ddf['coordinates'] = ddf['coordinates'].map(lambda x: x.split(','))
     ddf['coordinates'] = ddf['coordinates'].map(lambda x: [float(x[0]),float(x[1])])
     return ddf
@@ -15,7 +15,7 @@ def get_dailydf(d):
 
 
 def update_stations_df(workingdir):
-    ddf = get_dailydf('{}/daily_mobi_dataframe.csv'.format(workingdir))
+    ddf = get_dailydf(workingdir)
     try:
         sdf = load_csv('{}/stations_df.csv'.format(workingdir))
     except:
