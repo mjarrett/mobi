@@ -68,6 +68,8 @@ class Plot(BasePlot):
 
         return ax
 
+    def title(self,titletext):
+        self.f.suptitle(titletext,color=self.ax_color,horizontalalignment ='right')
 
     
     def draw(self,df,fname,kind='line',weather=False,rolling=None,highlight=False):
