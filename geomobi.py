@@ -22,11 +22,11 @@ class GeoPlot(object):
         self.fg_color=self.colors[1]
         self.fg_color2=self.colors[4]
         self.f, self.ax = plt.subplots()
-        self.f.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
+        self.f.subplots_adjust(left=0, bottom=0.05, right=1, top=1, wspace=None, hspace=None)
         self.ax = plt.axes(projection=ccrs.epsg(26910),frameon=False)
-        self.ax.background_patch.set_facecolor(self.colors[3])
-        
-                
+
+        # This is a workaround... frameon=False should work in future versions of cartopy
+        self.ax.outline_patch.set_visible(False)
 
         self.left = 485844
         self.right = 495513
@@ -35,8 +35,8 @@ class GeoPlot(object):
 
         self.ax.set_extent([self.left,self.right,self.bottom,self.top ], ccrs.epsg(26910))
         
-        self.ax.text(self.right,self.bottom+200,'@VanBikeShareBot',color=self.colors[1],size=18,alpha=0.8,horizontalalignment='right')
-        
+        self.ax.text(self.right,self.bottom-400,'@VanBikeShareBot',color=self.colors[1],size=18,alpha=0.6,horizontalalignment='right')
+             
         
     def addgeo(self,shapef,edgecolor='black',facecolor='white',alpha=1,zorder=1):
         shape = list(shpreader.Reader(shapef).geometries())
