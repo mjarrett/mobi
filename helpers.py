@@ -17,7 +17,7 @@ def get_dailydf(d):
 def update_stations_df(workingdir):
     ddf = get_dailydf(workingdir)
     try:
-        sdf = load_csv('{}/stations_df.csv'.format(workingdir))
+        sdf = pd.read_json('{}/stations_df.json'.format(workingdir))
     except:
         sdf = pd.DataFrame()
 
@@ -27,8 +27,10 @@ def update_stations_df(workingdir):
     ddf['coordinates'] = ddf['coordinates'].map(lambda x:tuple(x))
     ddf = ddf.set_index('name')
 
+    sdf['coordinates'] = sdf['coordinates'].map(lambda x:tuple(x))
     sdf = pd.concat([sdf,ddf])
     sdf = sdf[~sdf.index.duplicated(keep='last')]
+  
     
     #sdf.to_csv('{}/stations_df.csv'.format(workingdir))
     sdf.to_json('{}/stations_df.json'.format(workingdir))
