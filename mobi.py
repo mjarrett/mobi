@@ -229,8 +229,10 @@ if __name__ == '__main__':
 
 
     if arg == '--update':
+        # Update stations dataframe:
+        update_stations_df(workingdir)
+
         # Load daily dataframe
-        
         dailydf = pd.read_csv('{}/daily_mobi_dataframe.csv'.format(workingdir))
         a,b,c = breakdown_ddf(dailydf)
         update_dataframes(a,b,c,workingdir=workingdir)
@@ -238,9 +240,8 @@ if __name__ == '__main__':
         # Rename daily df
         timestr = time.strftime("%Y%m%d-%H%M%S")
         os.rename('{}/daily_mobi_dataframe.csv'.format(workingdir),'{}/backups/daily_mobi_dataframe.csv_BAK_{}'.format(workingdir,timestr))
-        # Update stations dataframe:
-        #sdf = load_csv('{}/stations_df.csv'.format(workingdir))
-        update_stations_df(workingdir)
+        
+        
 
     elif arg == '--query':
         query_mobi_api(workingdir=workingdir)
@@ -254,8 +255,10 @@ if __name__ == '__main__':
         
     elif arg == '--plots':
         #tddf = load_csv('{}/taken_daily_df.csv'.format(workingdir))
+        print("Loading data")
         thdf = load_csv('{}/taken_hourly_df.csv'.format(workingdir))
 
+        print("Grouping data")
         #tddf = tddf['2017-07':]
         #thdf = thdf['2017-07':]
         tddf = thdf.groupby(pd.Grouper(freq='D')).sum()
@@ -268,7 +271,7 @@ if __name__ == '__main__':
             else: return x
         #thdf.loc['2018-07-28 11:00:00'] = thdf.loc['2018-07-28 10:00:00'].map(fix)
         
-        
+        print("Setting variables")
         imdir = '/var/www/html/mobi/images/'
         today = datetime.datetime.now().strftime('%Y-%m-%d')
         thisyear = datetime.datetime.now().strftime('%Y')
@@ -282,20 +285,26 @@ if __name__ == '__main__':
 
         #print(thdf.sum(1).loc[yday_min7:yday])
 
-        
+        print("Drawing plots")
         plots.Plot().draw(tddf.sum(1).iloc[-365:],imdir+'lastyear_daily.png',weather=True)
+        print("Drawing plots")
         plots.Plot().draw(tddf.sum(1).iloc[-30:],imdir+'lastmonth_daily.png',kind='bar',weather=True,highlight=True)
+        print("Drawing plots")
         plots.Plot().draw(thdf.sum(1).iloc[-7*24:-1],imdir+'lastweek_hourly.png',kind='line')
+        print("Drawing plots")
         plots.Plot().draw(tddf.sum(1),imdir+'alltime_rolling.png',weather=True,rolling=7)
+        print("Drawing plots")
         plots.Plot().draw(thdf.sum(1).loc[yday_min7:yday],imdir+'lastweek_hourly_yesterday.png')
-        
+        print("Drawing plots")
         plots.Plot().draw(thdf[thisyear:],imdir+'today_cumsum.png',kind='cumsum')
+        print("Drawing plots")
         plots.Plot().draw(thdf[thisyear:yday],imdir+'yesterday_cumsum.png',kind='cumsum')
-
+        print("Drawing plots")
         plots.Plot().draw(tddf.sum(1).loc[yday_min31:yday],imdir+'lastmonth_daily_yesterday.png',kind='bar',weather=True,highlight=True)
 
 
         #print(yday)
+        print("Drawing GeoPlots")
         geomobi.make_station_map(yday,imdir+'station_map_yesterday.png')
         geomobi.make_station_ani(yday,imdir+'station_ani_yesterday.gif')
                          
