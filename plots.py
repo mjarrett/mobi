@@ -7,17 +7,15 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import seaborn as sns
 from jinja2 import Environment, FileSystemLoader
 import time
 import datetime
 import vanweather as vw
 import mobi
-#import geomobi
 import matplotlib.lines as mlines
+import cartopy.crs as ccrs
+import cartopy.io.shapereader as shpreader
 
-#plt.style.use('ggplot')
-import seaborn as sns
 
 
 
@@ -179,9 +177,9 @@ class Plot(BasePlot):
         
 
 class GeoPlot(Plot):
-    def __init__(self,n=1,m=0):
+    def __init__(self):
 
-        super().__init__(n,m)
+        super().__init__(n=1,m=0)
 
         self.f, self.ax = plt.subplots()
         self.f.subplots_adjust(left=0, bottom=0.05, right=1, top=1, wspace=None, hspace=None)
@@ -209,7 +207,6 @@ class GeoPlot(Plot):
         
     
     def draw(self,ddf,date):
-        print(ddf.head())
         self.ax.scatter(ddf['long'],ddf['lat'],transform=ccrs.PlateCarree(),
                         alpha=0.7,s=ddf['trips'],color=self.colors[0],zorder=100)
         
