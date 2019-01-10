@@ -1,5 +1,7 @@
 import matplotlib as mpl
-#mpl.use('AGG')
+
+if __name__ == '__main__':
+    mpl.use('AGG')
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
@@ -12,70 +14,20 @@ import matplotlib.animation as animation
 import datetime
 
 
-class GeoPlot(object):
-    def __init__(self):
-
-     
-        #self.colors=sns.color_palette()
-        colors = [ "dusty purple","windows blue", "amber", "greyish", "faded green"]
-        self.colors = sns.xkcd_palette(colors)
-        self.fg_color=self.colors[1]
-        self.fg_color2=self.colors[4]
-        self.f, self.ax = plt.subplots()
-        self.f.subplots_adjust(left=0, bottom=0.05, right=1, top=1, wspace=None, hspace=None)
-        self.ax = plt.axes(projection=ccrs.epsg(26910),frameon=False)
-
-        # This is a workaround... frameon=False should work in future versions of cartopy
-        self.ax.outline_patch.set_visible(False)
-
-        self.left = 485844
-        self.right = 495513
-        self.bottom = 5453579
-        self.top = 5462500
-
-        self.ax.set_extent([self.left,self.right,self.bottom,self.top ], ccrs.epsg(26910))
-        
-        self.ax.text(self.right,self.bottom-400,'@VanBikeShareBot',color=self.colors[1],size=18,alpha=0.6,horizontalalignment='right')
-             
-        
-    def addgeo(self,shapef,edgecolor='black',facecolor='white',alpha=1,zorder=1):
-        shape = list(shpreader.Reader(shapef).geometries())
-        record = list(shpreader.Reader(shapef).records())
-        self.ax.add_geometries(shape, ccrs.epsg(26910),
-                      edgecolor=edgecolor, facecolor=facecolor, alpha=alpha,zorder=zorder)
-        return shape, record    
-        
-    
-    def draw(self,ddf,date):
-        
-        self.ax.scatter(ddf['long'],ddf['lat'],transform=ccrs.PlateCarree(),alpha=0.7,s=ddf['trips'],color=self.colors[1],zorder=100)
-        
-        
-       
-        # Dummy scatters for the legend
-        l1 = self.ax.scatter([0],[0], s=10, edgecolors='none',color=self.colors[1],alpha=0.7)
-        l2 = self.ax.scatter([0],[0], s=100, edgecolors='none',color=self.colors[1],alpha=0.7)
-        labels=['10','100']
-        self.ax.legend([l1,l2],labels,title='Station Activity\n{}'.format(date))
-
-        return self.f
-        
-        f.savefig(fname,bbox_inches='tight',pad_inches=0.0,transparent = True)
-
-    
 
     
     
     
-def make_station_map(date,fname):
-    workingdir='/data/mobi/data/'
+def make_station_map(date,fname,workingdir):
+    #workingdir='/data/mobi/data/'
    
     #Load mobi daily data
     tddf = mobi.load_csv(workingdir+'/taken_daily_df.csv')
     rddf = mobi.load_csv(workingdir+'/returned_daily_df.csv')
     addf = tddf + rddf
     ddf = mobi.get_dailydf(workingdir)
-
+    
+    print(addf.tail())
 
     # Get yesterday's trip counts
     trips = addf.loc[date].reset_index()
@@ -83,13 +35,9 @@ def make_station_map(date,fname):
 
     ddf['name'] = ddf['name'].drop_duplicates()
     ddf = ddf[['coordinates','name']]
-    #ddf = ddf[['coordinates','name']].drop_duplicates()
     ddf['lat'] = ddf['coordinates'].map(lambda x: x[0])
     ddf['long'] = ddf['coordinates'].map(lambda x: x[1])
-    #ddf = pd.concat([ddf['coordinates'].str.split(',', expand=True),ddf['name']],axis=1)
-    #ddf.columns = ['lat','long','name']
-    #ddf.lat = ddf.lat[ddf.lat != ''].astype('float')
-    #ddf.long = ddf.long[ddf.long != ''].astype('float')
+
 
     ddf = pd.merge(trips, ddf, how='inner',on='name')
     
@@ -103,8 +51,8 @@ def make_station_map(date,fname):
     
     
     
-def make_station_ani(date1,fname,days=1,spark=True):
-    workingdir='/data/mobi/data'
+def make_station_ani(date1,fname,workingdir,days=1,spark=True):
+    #workingdir='/data/mobi/data'
 
     date2 = (datetime.datetime.strptime(date1,'%Y-%m-%d') +  datetime.timedelta(days-1)).strftime('%Y-%m-%d')
     
@@ -133,13 +81,11 @@ def make_station_ani(date1,fname,days=1,spark=True):
     plot = mobi.geomobi.GeoPlot()
     plot.addgeo('/home/msj/shapes/bikeways.shp',facecolor="none",alpha=0.5,edgecolor='green',zorder=95)
     plot.addgeo('/home/msj/shapes/shoreline2002.shp',facecolor='#ffffff',zorder=1)
-    #plot.addgeo('/home/msj/shapes/greenways.shp',ax,edgecolor='green',alpha=1,zorder=90)
-    #plot.addgeo('/home/msj/shapes/public_streets.shp',ax,edgecolor='black',alpha=0,zorder=96)
+
 
     
     plot.f.set_facecolor([0.5,0.5,0.5])
     plot.f.set_size_inches(5,4.7)
-    #f.set_edgecolor('gray')
     plot.f.subplots_adjust(left=-0.1, right=1.1, bottom=0, top=1)
     
     
@@ -194,4 +140,5 @@ def make_station_ani(date1,fname,days=1,spark=True):
     ani.save(fname,writer='imagemagick')
     
 if __name__=='__main__':
-    make_station_ani('2018-06-20','ani.gif')
+    #make_station_ani('2018-06-20','ani.gif')
+    make_station_map('2018-11-20','geoplot.png','/data/mobi/data/')

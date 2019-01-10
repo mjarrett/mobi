@@ -13,7 +13,7 @@ import time
 import datetime
 import vanweather as vw
 import mobi
-import geomobi
+#import geomobi
 import matplotlib.lines as mlines
 
 #plt.style.use('ggplot')
@@ -35,11 +35,13 @@ class BasePlot():
         self.ax_color = self.colors[4]
         
         
-        self.f, self.ax = plt.subplots(n,m,figsize=(7,5))
+        
         
 class Plot(BasePlot):
     def __init__(self,n=1,m=1):
         super().__init__(n,m)
+        
+        self.f, self.ax = plt.subplots(n,m,figsize=(7,5))
         if type(self.ax) == np.ndarray:
             self.ax = [self.set_ax_props(x) for x in self.ax]
         else:
@@ -175,7 +177,55 @@ class Plot(BasePlot):
 #     ax.legend(handles=[green_line,gray_line])
 #     plot.f.savefig(fname)
         
-     
+
+class GeoPlot(Plot):
+    def __init__(self,n=1,m=0):
+
+        super().__init__(n,m)
+
+        self.f, self.ax = plt.subplots()
+        self.f.subplots_adjust(left=0, bottom=0.05, right=1, top=1, wspace=None, hspace=None)
+        self.ax = plt.axes(projection=ccrs.epsg(26910),frameon=False)
+
+        # This is a workaround... frameon=False should work in future versions of cartopy
+        self.ax.outline_patch.set_visible(False)
+
+        self.left = 485844
+        self.right = 495513
+        self.bottom = 5453579
+        self.top = 5462500
+
+        self.ax.set_extent([self.left,self.right,self.bottom,self.top ], ccrs.epsg(26910))
+        
+        self.ax.text(self.right,self.bottom-400,'@VanBikeShareBot',color=self.colors[1],size=18,alpha=0.6,horizontalalignment='right')
+             
+        
+    def addgeo(self,shapef,edgecolor='black',facecolor='white',alpha=1,zorder=1):
+        shape = list(shpreader.Reader(shapef).geometries())
+        record = list(shpreader.Reader(shapef).records())
+        self.ax.add_geometries(shape, ccrs.epsg(26910),
+                      edgecolor=edgecolor, facecolor=facecolor, alpha=alpha,zorder=zorder)
+        return shape, record    
+        
+    
+    def draw(self,ddf,date):
+        print(ddf.head())
+        self.ax.scatter(ddf['long'],ddf['lat'],transform=ccrs.PlateCarree(),
+                        alpha=0.7,s=ddf['trips'],color=self.colors[0],zorder=100)
+        
+        
+       
+        # Dummy scatters for the legend
+        l1 = self.ax.scatter([0],[0], s=10, edgecolors='none',color=self.colors[0],alpha=0.7)
+        l2 = self.ax.scatter([0],[0], s=100, edgecolors='none',color=self.colors[0],alpha=0.7)
+        labels=['10','100']
+        self.ax.legend([l1,l2],labels,title='Station Activity\n{}'.format(date))
+
+        return self.f
+        
+        f.savefig(fname,bbox_inches='tight',pad_inches=0.0,transparent = True)
+
+    
         
 if __name__ == '__main__':
     
