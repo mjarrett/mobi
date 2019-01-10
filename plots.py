@@ -25,7 +25,7 @@ import seaborn as sns
 
 class BasePlot():
     def __init__(self,n=1,m=1):
-
+        #https://xkcd.com/color/rgb/
         self.colors = ['#3778bf','#7bb274','#825f87','#feb308','#59656d']
         mpl.rcParams['axes.prop_cycle'] = mpl.cycler('color',self.colors)
         self.bg_color = '#ffffff'
