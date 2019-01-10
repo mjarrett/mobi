@@ -239,6 +239,11 @@ if __name__ == '__main__':
 
         # Rename daily df
         timestr = time.strftime("%Y%m%d-%H%M%S")
+
+        try:
+            os.mkdir('{}/backups/'.format(workingdir))
+        except:
+            pass
         os.rename('{}/daily_mobi_dataframe.csv'.format(workingdir),'{}/backups/daily_mobi_dataframe.csv_BAK_{}'.format(workingdir,timestr))
         
         
@@ -272,7 +277,12 @@ if __name__ == '__main__':
         #thdf.loc['2018-07-28 11:00:00'] = thdf.loc['2018-07-28 10:00:00'].map(fix)
         
         print("Setting variables")
-        imdir = '/var/www/html/mobi/images/'
+        #imdir = '/var/www/html/mobi/images/'
+        try:
+            os.mkdir('{}/images/'.format(workingdir))
+        except:
+            pass
+        imdir = '{}/images/'.format(workingdir)
         today = datetime.datetime.now().strftime('%Y-%m-%d')
         thisyear = datetime.datetime.now().strftime('%Y')
         yday = (datetime.datetime.now() - datetime.timedelta(1)).strftime('%Y-%m-%d')
