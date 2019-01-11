@@ -13,14 +13,19 @@ def get_dailydf(d):
 # ddf = get_dailydf('/data/mobi/data/')
 # print(ddf['coordinates'])
 
+def get_stationsdf(workingdir):
+
+    sdf = pd.read_json("{}/stations_df.json".format(workingdir))
+    return sdf
 
 def update_stations_df(workingdir):
     ddf = get_dailydf(workingdir)
     try:
         sdf = pd.read_json('{}/stations_df.json'.format(workingdir))
-    except:
-        sdf = pd.DataFrame()
-
+        sdf = sdf.set_index('name')
+    except ValueError:
+        sdf = pd.DataFrame(columns=['name','coordinates','active'])
+        sdf = sdf.set_index('name')
 
     ddf = ddf.drop_duplicates('name').copy()
     ddf = ddf[['coordinates','name']]
@@ -29,8 +34,9 @@ def update_stations_df(workingdir):
 
     sdf['coordinates'] = sdf['coordinates'].map(lambda x:tuple(x))
     sdf = pd.concat([sdf,ddf])
+    sdf['active'] = [True if x in ddf.index else False for x in sdf.index]
     sdf = sdf[~sdf.index.duplicated(keep='last')]
-  
+    sdf = sdf.reset_index()
     
-    #sdf.to_csv('{}/stations_df.csv'.format(workingdir))
     sdf.to_json('{}/stations_df.json'.format(workingdir))
+    return sdf
