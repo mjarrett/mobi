@@ -19,6 +19,7 @@ def get_stationsdf(workingdir):
     return sdf
 
 def get_active_stations(workingdir):
+    """ Returns list of active stations """
     sdf = get_stationsdf(workingdir)
     active_stations = list(sdf.loc[sdf['active']==True,'name'])
     return active_stations
