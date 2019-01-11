@@ -10,11 +10,12 @@ import datetime
 from pandas.io.json import json_normalize
 import urllib.request
 import sys
-from helpers import *
 from jinja2 import Environment, FileSystemLoader
 
-import plots
 import geomobi
+
+from plots import *
+from helpers import *
 from mobi_system_data import *
 
 def breakdown_ddf(dailydf,workingdir='./'):
@@ -296,27 +297,29 @@ if __name__ == '__main__':
         #print(thdf.sum(1).loc[yday_min7:yday])
 
         print("Drawing plots")
-        plots.Plot().draw(tddf.sum(1).iloc[-365:],imdir+'lastyear_daily.png',weather=True)
+        Plot().draw(tddf.sum(1).iloc[-365:],imdir+'lastyear_daily.png',weather=True)
         print("Drawing plots")
-        plots.Plot().draw(tddf.sum(1).iloc[-30:],imdir+'lastmonth_daily.png',kind='bar',weather=True,highlight=True)
+        Plot().draw(tddf.sum(1).iloc[-30:],imdir+'lastmonth_daily.png',kind='bar',weather=True,highlight=True)
         print("Drawing plots")
-        plots.Plot().draw(thdf.sum(1).iloc[-7*24:-1],imdir+'lastweek_hourly.png',kind='line')
+        Plot().draw(thdf.sum(1).iloc[-7*24:-1],imdir+'lastweek_hourly.png',kind='line')
         print("Drawing plots")
-        plots.Plot().draw(tddf.sum(1),imdir+'alltime_rolling.png',weather=True,rolling=7)
+        Plot().draw(tddf.sum(1),imdir+'alltime_rolling.png',weather=True,rolling=7)
         print("Drawing plots")
-        plots.Plot().draw(thdf.sum(1).loc[yday_min7:yday],imdir+'lastweek_hourly_yesterday.png')
+        Plot().draw(thdf.sum(1).loc[yday_min7:yday],imdir+'lastweek_hourly_yesterday.png')
         print("Drawing plots")
-        plots.Plot().draw(thdf[thisyear:],imdir+'today_cumsum.png',kind='cumsum')
+        Plot().draw(thdf[thisyear:],imdir+'today_cumsum.png',kind='cumsum')
         print("Drawing plots")
-        plots.Plot().draw(thdf[thisyear:yday],imdir+'yesterday_cumsum.png',kind='cumsum')
+        Plot().draw(thdf[thisyear:yday],imdir+'yesterday_cumsum.png',kind='cumsum')
         print("Drawing plots")
-        plots.Plot().draw(tddf.sum(1).loc[yday_min31:yday],imdir+'lastmonth_daily_yesterday.png',kind='bar',weather=True,highlight=True)
+        Plot().draw(tddf.sum(1).loc[yday_min31:yday],
+                          imdir+'lastmonth_daily_yesterday.png',
+                          kind='bar',weather=True,highlight=True)
 
 
         #print(yday)
         print("Drawing GeoPlots")
-        geomobi.make_station_map(yday,imdir+'station_map_yesterday.png')
-        geomobi.make_station_ani(yday,imdir+'station_ani_yesterday.gif')
+        geomobi.make_station_map(yday,imdir+'station_map_yesterday.png',workingdir)
+        geomobi.make_station_ani(yday,imdir+'station_ani_yesterday.gif',workingdir)
                          
                          
     elif arg == '--html':
