@@ -40,9 +40,10 @@ def make_station_map(date,fname,workingdir):
     plot = mobi.GeoPlot()
     plot.addgeo('/home/msj/shapes/bikeways.shp',facecolor="none",edgecolor='green',zorder=95)
     plot.addgeo('/home/msj/shapes/shoreline2002.shp',facecolor='#ffffff',zorder=1)
-    #plot.addgeo('/home/msj/shapes/greenways.shp',ax,edgecolor='green',alpha=1,zorder=90)
-    #plot.addgeo('/home/msj/shapes/public_streets.shp',ax,edgecolor='black',alpha=0,zorder=96)
     f = plot.draw(sdf,date)
+    
+
+        
     f.savefig(fname,bbox_inches='tight',pad_inches=0.0,transparent=True)
     
     
@@ -59,8 +60,9 @@ def make_station_ani(date1,fname,workingdir,days=1,spark=True):
     ahdf = thdf	+ rhdf
     
     sdf = mobi.get_stationsdf(workingdir)
+    # Only active stations
+    ahdf = ahdf[sdf.loc[sdf['active'],'name']]
     
-
     # Get day's trip counts
     trips = ahdf.loc[date1:date2].iloc[0].reset_index()
     trips.columns = ['name','trips']
@@ -74,7 +76,7 @@ def make_station_ani(date1,fname,workingdir,days=1,spark=True):
     plot.addgeo('/home/msj/shapes/bikeways.shp',facecolor="none",alpha=0.5,edgecolor='green',zorder=95)
     plot.addgeo('/home/msj/shapes/shoreline2002.shp',facecolor='#ffffff',zorder=1)
 
-
+   
     
     plot.f.set_facecolor([0.5,0.5,0.5])
     plot.f.set_size_inches(5,4.7)
@@ -94,8 +96,15 @@ def make_station_ani(date1,fname,workingdir,days=1,spark=True):
     
     ax = plot.f.axes[0]
 
-    stations = ax.scatter(df.long,df.lat,color=plot.fg_color2,alpha=0.7,s=10*df['trips'],zorder=100,transform=ccrs.PlateCarree())
+    # Draw stations
+    stations = ax.scatter(df.long,df.lat,
+                         color=plot.fg_color2,alpha=0.7,
+                         s=10*df['trips'],
+                         zorder=100,transform=ccrs.PlateCarree())
 
+                              
+                              
+                
     # Dummy scatters for the legend
     l1 = ax.scatter([0],[0], s=10, edgecolors='none',color=plot.fg_color2,alpha=0.7)
     l2 = ax.scatter([0],[0], s=100, edgecolors='none',color=plot.fg_color2,alpha=0.7)
@@ -141,5 +150,5 @@ def make_station_ani(date1,fname,workingdir,days=1,spark=True):
     ani.save(fname,writer='imagemagick')
     
 if __name__=='__main__':
-    make_station_ani('2018-11-20','ani.gif','/data/mobi/data/')
-    make_station_map('2018-11-20','geoplot.png','/data/mobi/data/')
+    #make_station_ani('2018-11-20','ani.gif','/data/mobi/data/')
+    make_station_map('2019-01-10','geoplot.png','/data/mobi/data/')

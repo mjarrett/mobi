@@ -30,7 +30,9 @@ class BasePlot():
         self.fg_color = self.colors[1]
         self.fg_color2 = self.colors[0]
         self.fg_color3 = self.colors[3]
+        self.fg_color4 = self.colors[2]
         self.ax_color = self.colors[4]
+        
         
         
         
@@ -91,7 +93,8 @@ class Plot(BasePlot):
             self.f,(self.ax,self.wax) = plt.subplots(2,sharex=True,gridspec_kw={'height_ratios':[4.5,1]},figsize=(7,5))
             self.ax = self.set_ax_props()
             self.wax = self.set_ax_props(self.wax)
-            self.wdf = vw.get_weather_range(self.df.index[0].strftime('%Y-%m'),(self.df.index[-1]-datetime.timedelta(1)).strftime('%Y-%m'))
+            self.wdf = vw.get_weather_range(self.df.index[0].strftime('%Y-%m'),
+                                            (self.df.index[-1]-datetime.timedelta(1)).strftime('%Y-%m'))
             self.wdf = self.wdf.loc[[x for x in self.wdf.index if x in self.df.index],:]
 
             self.wax.bar(self.wdf.index,self.wdf['Total Precipmm'],color=self.fg_color2)
@@ -195,7 +198,9 @@ class GeoPlot(Plot):
 
         self.ax.set_extent([self.left,self.right,self.bottom,self.top ], ccrs.epsg(26910))
         
-        self.ax.text(self.right,self.bottom-400,'@VanBikeShareBot',color=self.colors[1],size=18,alpha=0.6,horizontalalignment='right')
+        self.ax.text(self.right,self.bottom-400,'@VanBikeShareBot',
+                     color=self.colors[1],size=18,
+                     alpha=0.6,horizontalalignment='right')
              
         
     def addgeo(self,shapef,edgecolor='black',facecolor='white',alpha=1,zorder=1):
@@ -207,19 +212,25 @@ class GeoPlot(Plot):
         
     
     def draw(self,sdf,date):
-        lats = sdf['coordinates'].map(lambda x: x[0])
-        longs = sdf['coordinates'].map(lambda x: x[1])
+        sdf['lat'] = sdf['coordinates'].map(lambda x: x[0])
+        sdf['long'] = sdf['coordinates'].map(lambda x: x[1])
 
-        self.ax.scatter(longs,lats,transform=ccrs.PlateCarree(),alpha=0.7,
-                        s=sdf['trips'],color=self.colors[0],zorder=100)
+        self.ax.scatter(sdf.long,sdf.lat,transform=ccrs.PlateCarree(),alpha=0.7,
+                        s=sdf['trips'],color=self.fg_color2,zorder=100)
         
-        
+        stations_null = self.ax.scatter(sdf.long[sdf.trips==0],
+                               sdf.lat[sdf.trips==0],
+                               transform=ccrs.PlateCarree(),
+                               color=self.fg_color4,alpha=0.7,s=10,marker='x',
+                                        zorder=100)
        
         # Dummy scatters for the legend
-        l1 = self.ax.scatter([0],[0], s=10, edgecolors='none',color=self.colors[0],alpha=0.7)
-        l2 = self.ax.scatter([0],[0], s=100, edgecolors='none',color=self.colors[0],alpha=0.7)
-        labels=['10','100']
-        self.ax.legend([l1,l2],labels,title='Station Activity\n{}'.format(date))
+        l1 = self.ax.scatter([0],[0], s=10, edgecolors='none',color=self.fg_color2,alpha=0.7)
+        l2 = self.ax.scatter([0],[0], s=100, edgecolors='none',color=self.fg_color2,alpha=0.7)
+        l3 = self.ax.scatter([0],[0], s=10, marker='x',edgecolors='none',color=self.fg_color4,alpha=0.7)
+       
+        labels=['0','10','100']
+        self.ax.legend([l3,l1,l2],labels,title='Station Activity\n{}'.format(date))
 
         return self.f
         
