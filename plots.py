@@ -206,9 +206,12 @@ class GeoPlot(Plot):
         return shape, record    
         
     
-    def draw(self,ddf,date):
-        self.ax.scatter(ddf['long'],ddf['lat'],transform=ccrs.PlateCarree(),
-                        alpha=0.7,s=ddf['trips'],color=self.colors[0],zorder=100)
+    def draw(self,sdf,date):
+        lats = sdf['coordinates'].map(lambda x: x[0])
+        longs = sdf['coordinates'].map(lambda x: x[1])
+
+        self.ax.scatter(longs,lats,transform=ccrs.PlateCarree(),alpha=0.7,
+                        s=sdf['trips'],color=self.colors[0],zorder=100)
         
         
        
