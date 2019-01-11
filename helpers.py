@@ -18,6 +18,11 @@ def get_stationsdf(workingdir):
     sdf = pd.read_json("{}/stations_df.json".format(workingdir))
     return sdf
 
+def get_active_stations(workingdir):
+    sdf = get_stationsdf(workingdir)
+    active_stations = list(sdf.loc[sdf['active']==True,'name'])
+    return active_stations
+
 def update_stations_df(workingdir):
     ddf = get_dailydf(workingdir)
     try:
