@@ -1,4 +1,9 @@
 import pandas as pd
+import cartopy.crs as ccrs
+import cartopy.io.shapereader as shpreader
+import shapely
+import pyproj
+import mobi
 
 def prep_sys_df(f): 
     df = pd.read_csv(f,low_memory=False)
@@ -27,6 +32,8 @@ def prep_sys_df(f):
     df['Departure'] = pd.to_datetime(df['Departure'])
     df['Return'] = pd.to_datetime(df['Return'])
     
+    
+    
     return df
 
 
@@ -43,24 +50,49 @@ def get_mem_types(df):
 
 def add_station_coords(df,sdf,bidirectional=True):
 
-    pd.options.mode.chained_assignment = None
-#     ddf['name'] = ddf['name'].drop_duplicates()
-#     ddf = ddf[['coordinates','name']]
- 
-#     ddf['coordinates'] = ddf['coordinates'].map(lambda x:tuple(x))
-#    locdict = ddf.set_index('name').to_dict()['coordinates']
-    locdict = sdf.to_dict()['coordinates']
-    df['Departure coords'] = df['Departure station'].map(locdict)
-    df['Return coords'] = df['Return station'].map(locdict)
-    df = df.dropna(subset=['Departure coords','Return coords'])
+    epsg  = pyproj.Proj(init='epsg:26910')
+    pc = pyproj.Proj(proj='latlon')
+
+    shapef = '/home/msj/shapes/local_area_boundary.shp'
+    shapes = list(shpreader.Reader(shapef).geometries())
+    records = list(shpreader.Reader(shapef).records())
+
+
+    sdf['coordinates epsg'] = sdf['coordinates'].map(lambda x: pyproj.transform(pc,epsg, x[1],x[0]) )
+
+    def f(coord):
+        hoods =  [r.attributes['NAME'] for s,r in zip(shapes,records) if s.contains(shapely.geometry.Point(*coord))]
+        if len(hoods) == 0:
+            return "Stanley Park"
+        else:
+            return hoods[0]
+
+
+    sdf['neighbourhood'] = sdf['coordinates epsg'].map(lambda x: f(x))
+
+    df = pd.merge(df,sdf[['name','neighbourhood','coordinates']],how='left',left_on='Departure station',right_on='name',
+                  suffixes=('_x',' departure'))
+
+    df = pd.merge(df,sdf[['name','neighbourhood','coordinates']],how='left',left_on='Return station',right_on='name',
+                  suffixes=(' departure',' return'))
+
+
+
+
+    df = df.rename(columns={'neighbourhood return':'Return neighbourhood',
+                    'neighbourhood departure':'Departure neighbourhood',
+                    'coordinates return':'Return coords',
+                    'coordinates departure':'Departure coords'})
+    del df['name departure']
+    del df['name return']
+
+
     df['stations coords'] = df[['Departure coords','Return coords']].values.tolist()
     df['stations'] = df[['Departure station','Return station']].values.tolist()
-    if bidirectional:
-        df['stations coords'] = df['stations coords'].map(lambda x: sorted(x))
-        df['stations'] = df['stations'].map(lambda x: sorted(x))
-    df['stations coords'] = df['stations coords'].map(lambda x: tuple(x))
-    df['stations'] = df['stations'].map(lambda x: tuple(x))
-    pd.options.mode.chained_assignment = 'warn'
+    df['stations coords'] = df['stations coords'].map(lambda x: tuple(sorted(x)))
+    df['stations'] = df['stations'].map(lambda x: tuple(sorted(x)))
+    
+
 
     return df
 

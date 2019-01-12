@@ -16,6 +16,7 @@ def get_dailydf(d):
 def get_stationsdf(workingdir):
 
     sdf = pd.read_json("{}/stations_df.json".format(workingdir))
+    sdf['coordinates'] = sdf['coordinates'].map(lambda x: tuple(x))
     return sdf
 
 def get_active_stations(workingdir):
