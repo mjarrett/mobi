@@ -49,6 +49,11 @@ def get_mem_types(df):
 
 
 def add_station_coords(df,sdf,bidirectional=True):
+    
+    """
+    WARNING: This drops records if the listed Departer/Return station name
+             isn't in the stations_df.json file"
+    """
 
     epsg  = pyproj.Proj(init='epsg:26910')
     pc = pyproj.Proj(proj='latlon')
@@ -70,12 +75,11 @@ def add_station_coords(df,sdf,bidirectional=True):
 
     sdf['neighbourhood'] = sdf['coordinates epsg'].map(lambda x: f(x))
 
-    df = pd.merge(df,sdf[['name','neighbourhood','coordinates']],how='left',left_on='Departure station',right_on='name',
+    df = pd.merge(df,sdf[['name','neighbourhood','coordinates']],how='inner',left_on='Departure station',right_on='name',
                   suffixes=('_x',' departure'))
 
-    df = pd.merge(df,sdf[['name','neighbourhood','coordinates']],how='left',left_on='Return station',right_on='name',
+    df = pd.merge(df,sdf[['name','neighbourhood','coordinates']],how='inner',left_on='Return station',right_on='name',
                   suffixes=(' departure',' return'))
-
 
 
 
