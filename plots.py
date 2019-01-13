@@ -35,7 +35,11 @@ class BasePlot():
         
         
         
-        
+    def title(self,titletext,x=0.02,y=0.98,horizontalalignment='left',**kwargs):
+        self.f.suptitle(titletext,x=x,y=y,color=self.ax_color,horizontalalignment=horizontalalignment,**kwargs)
+
+    def tight_layout(self,*args,**kwargs): 
+        self.f.tight_layout(rect=[0, 0.03, 1, 0.95],*args,**kwargs)        
         
 class Plot(BasePlot):
     def __init__(self,n=1,m=1):
@@ -68,11 +72,7 @@ class Plot(BasePlot):
 
         return ax
 
-    def title(self,titletext,x=0.02,y=0.98,horizontalalignment='left',**kwargs):
-        self.f.suptitle(titletext,x=x,y=y,color=self.ax_color,horizontalalignment=horizontalalignment,**kwargs)
 
-    def tight_layout(self,*args,**kwargs): 
-        self.f.tight_layout(rect=[0, 0.03, 1, 0.95],*args,**kwargs)
 
 
     def draw(self,df,fname,kind='line',weather=False,rolling=None,highlight=False):
@@ -179,7 +179,7 @@ class Plot(BasePlot):
 #     plot.f.savefig(fname)
         
 
-class GeoPlot(Plot):
+class GeoPlot(BasePlot):
     def __init__(self):
 
         super().__init__(n=1,m=0)
