@@ -1,5 +1,10 @@
 import pandas as pd
 
+import cartopy.crs as ccrs
+import cartopy.io.shapereader as shpreader
+import shapely
+import pyproj
+
 def load_csv(f):
     df = pd.read_csv(f,index_col=0,parse_dates=[0])
     return df
@@ -45,5 +50,30 @@ def update_stations_df(workingdir):
     sdf = sdf[~sdf.index.duplicated(keep='last')]
     sdf = sdf.reset_index()
     
+    sdf = add_station_coords_sdf(sdf)
+    
     sdf.to_json('{}/stations_df.json'.format(workingdir))
+    return sdf
+
+def add_station_coords_sdf(sdf):
+    epsg  = pyproj.Proj(init='epsg:26910')
+    pc = pyproj.Proj(proj='latlon')
+
+    shapef = '/home/msj/shapes/local_area_boundary.shp'
+    shapes = list(shpreader.Reader(shapef).geometries())
+    records = list(shpreader.Reader(shapef).records())
+
+
+    sdf['coordinates epsg'] = sdf['coordinates'].map(lambda x: pyproj.transform(pc,epsg, x[1],x[0]) )
+
+    def f(coord):
+        hoods =  [r.attributes['NAME'] for s,r in zip(shapes,records) if s.contains(shapely.geometry.Point(*coord))]
+        if len(hoods) == 0:
+            return "Stanley Park"
+        else:
+            return hoods[0]
+
+
+    sdf['neighbourhood'] = sdf['coordinates epsg'].map(lambda x: f(x))
+
     return sdf

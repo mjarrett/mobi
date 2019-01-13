@@ -54,26 +54,8 @@ def add_station_coords(df,sdf,bidirectional=True):
     WARNING: This drops records if the listed Departer/Return station name
              isn't in the stations_df.json file"
     """
-
-    epsg  = pyproj.Proj(init='epsg:26910')
-    pc = pyproj.Proj(proj='latlon')
-
-    shapef = '/home/msj/shapes/local_area_boundary.shp'
-    shapes = list(shpreader.Reader(shapef).geometries())
-    records = list(shpreader.Reader(shapef).records())
-
-
-    sdf['coordinates epsg'] = sdf['coordinates'].map(lambda x: pyproj.transform(pc,epsg, x[1],x[0]) )
-
-    def f(coord):
-        hoods =  [r.attributes['NAME'] for s,r in zip(shapes,records) if s.contains(shapely.geometry.Point(*coord))]
-        if len(hoods) == 0:
-            return "Stanley Park"
-        else:
-            return hoods[0]
-
-
-    sdf['neighbourhood'] = sdf['coordinates epsg'].map(lambda x: f(x))
+    
+    
 
     df = pd.merge(df,sdf[['name','neighbourhood','coordinates']],how='inner',left_on='Departure station',right_on='name',
                   suffixes=('_x',' departure'))
@@ -99,6 +81,7 @@ def add_station_coords(df,sdf,bidirectional=True):
 
 
     return df
+
 
 
 def make_con_df(df):
