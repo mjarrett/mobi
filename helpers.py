@@ -75,5 +75,6 @@ def add_station_coords_sdf(sdf):
 
 
     sdf['neighbourhood'] = sdf['coordinates epsg'].map(lambda x: f(x))
+    del sdf['coordinates epsg']
 
     return sdf
