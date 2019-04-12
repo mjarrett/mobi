@@ -1,3 +1,5 @@
+#!/home/msj/miniconda3/bin/python3
+
 if __name__ == '__main__': 
     import matplotlib as mpl
     mpl.use('AGG')
@@ -199,7 +201,7 @@ def update_html(workingdir):
 
 
     j2_env = Environment(loader=FileSystemLoader('/home/msj/mobi/'),trim_blocks=True)
-    html = j2_env.get_template('index.html').render(context)
+    html = j2_env.get_template('index.tmpl').render(context)
 
     with open('/var/www/html/mobi/index.html','w') as outfile:
     #with open('/home/msj/mobi/test.html','w') as outfile:

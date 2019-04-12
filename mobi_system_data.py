@@ -6,8 +6,12 @@ import pyproj
 import mobi
 
 def prep_sys_df(f): 
-    df = pd.read_csv(f,low_memory=False)
-
+    
+    if f[-4:] == '.csv':
+        df = pd.read_csv(f,low_memory=False)
+    elif f[-5:] == '.xlsx':
+        df = pd.read_excel(f)
+        
     #df = df[df['Membership Type']!='VIP']
 
     df['Duration (min.)'] = df['Duration (sec.)'].map(lambda x: x/60)

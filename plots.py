@@ -17,21 +17,48 @@ import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 
 
+#print('Setting MPL defaults')
+#https://matplotlib.org/users/customizing.html
+colors = ['#3778bf','#7bb274','#825f87',
+          '#feb308','#59656d','#984447',
+          '#e17701','#add9f4','#1b264f',
+          '#4b296b','#380835','#607c8e',
+          '#ca6641']
+# colors = ['#3778bf','#7bb274',,'#feb308',
+#               '#59656d']
 
+mpl.rcParams['axes.prop_cycle'] = mpl.cycler('color',colors)
+bg_color = '#ffffff'
+fg_color = colors[1]
+fg_color2 = colors[0]
+fg_color3 = colors[3]
+fg_color4 = colors[2]
+ax_color = colors[4]
 
+mpl.rcParams['font.family'] = 'sans-serif'
+#mpl.rcParams['font.sans-serif'] = ['Helvetica']
+plt.rc('text', color=ax_color)
+#plt.rc('axes',titleweight='bold')
+
+mpl.rcParams['axes.spines.right'] = False
+mpl.rcParams['axes.spines.top'] = False
+mpl.rcParams['axes.edgecolor'] = ax_color
+mpl.rcParams['ytick.color'] = ax_color
+mpl.rcParams['xtick.color'] = ax_color
 
 
 class BasePlot():
     def __init__(self,n=1,m=1):
+        pass
         #https://xkcd.com/color/rgb/
-        self.colors = ['#3778bf','#7bb274','#825f87','#feb308','#59656d']
-        mpl.rcParams['axes.prop_cycle'] = mpl.cycler('color',self.colors)
+#         self.colors = ['#3778bf','#7bb274','#825f87','#feb308','#59656d']
+#         mpl.rcParams['axes.prop_cycle'] = mpl.cycler('color',self.colors)
         self.bg_color = '#ffffff'
-        self.fg_color = self.colors[1]
-        self.fg_color2 = self.colors[0]
-        self.fg_color3 = self.colors[3]
-        self.fg_color4 = self.colors[2]
-        self.ax_color = self.colors[4]
+        self.fg_color = fg_color
+        self.fg_color2 = fg_color2
+        self.fg_color3 = fg_color3
+        self.fg_color4 = fg_color4
+        self.ax_color = ax_color
         
         
         
@@ -42,10 +69,13 @@ class BasePlot():
         self.f.tight_layout(rect=[0, 0.03, 1, 0.95],*args,**kwargs)        
         
 class Plot(BasePlot):
-    def __init__(self,n=1,m=1):
+    def __init__(self,n=1,m=1,**kwargs):
         super().__init__(n,m)
         
-        self.f, self.ax = plt.subplots(n,m,figsize=(7,5))
+        if 'figsize' not in kwargs:
+            figsize=(7,5)
+        
+        self.f, self.ax = plt.subplots(n,m,**kwargs)
         if type(self.ax) == np.ndarray:
             self.ax = [self.set_ax_props(x) for x in self.ax]
         else:
@@ -62,7 +92,7 @@ class Plot(BasePlot):
         ax.set_xlabel("",color=self.ax_color)
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
-        ax.tick_params(axis='x',labelrotation=45)
+        ax.tick_params(axis='x',labelrotation=45,which='both',labelcolor=self.ax_color)
 
         ax.patch.set_facecolor(self.bg_color)
         ax.xaxis.set_tick_params(color=self.ax_color, labelcolor=self.ax_color)
@@ -75,7 +105,7 @@ class Plot(BasePlot):
 
 
 
-    def draw(self,df,fname,kind='line',weather=False,rolling=None,highlight=False):
+    def draw(self,df,fname,kind='line',weather=False,rolling=None,highlight=False,title=""):
         self.df = df               
         self.fname = fname
         self.kind = kind
@@ -147,6 +177,7 @@ class Plot(BasePlot):
             green_line= mlines.Line2D([], [], color=self.fg_color, marker='.',label="{}".format(date))
             self.ax.legend(handles=[green_line,gray_line])
 
+        self.ax.set_title(title,x=0.02,y=0.98,horizontalalignment='left')
         self.f.savefig(self.fname,bbox_inches='tight', facecolor=self.bg_color)
 
 
@@ -180,9 +211,9 @@ class Plot(BasePlot):
         
 
 class GeoPlot(BasePlot):
-    def __init__(self):
+    def __init__(self,n=1,m=0):
 
-        super().__init__(n=1,m=0)
+        super().__init__(n,m)
 
         self.f, self.ax = plt.subplots()
         self.f.subplots_adjust(left=0, bottom=0.05, right=1, top=1, wspace=None, hspace=None)
@@ -199,7 +230,7 @@ class GeoPlot(BasePlot):
         self.ax.set_extent([self.left,self.right,self.bottom,self.top ], ccrs.epsg(26910))
         
         self.ax.text(self.right,self.bottom-400,'@VanBikeShareBot',
-                     color=self.colors[1],size=18,
+                     color=fg_color,size=18,
                      alpha=0.6,horizontalalignment='right')
              
         
