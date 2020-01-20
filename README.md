@@ -1,5 +1,7 @@
 # Mobi API query and analysis
 
+**This package is deprecated**. See the [Bikedata](https://github.com/mjarrett/bikedata) package instead.
+
 Some tools for grabbing live data from the Mobi API and storing it in Pandas Dataframes. 
 
 ## Usage
